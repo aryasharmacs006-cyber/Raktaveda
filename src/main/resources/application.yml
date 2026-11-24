@@ -1,0 +1,98 @@
+spring:
+  application:
+    name: raktaveda
+  datasource:
+    url: ${RAKTAVEDA_DB_URL:jdbc:postgresql://localhost:5432/raktaveda}
+    username: ${RAKTAVEDA_DB_USER:raktaveda}
+    # No default on purpose: the app refuses to start without it.
+    password: ${RAKTAVEDA_DB_PASSWORD}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+  # "none" = do not trust X-Forwarded-* headers. Set to "native" ONLY when the app runs
+  # behind a reverse proxy you control (needed for HTTPS detection and real client IPs).
+  forward-headers-strategy: ${RAKTAVEDA_FORWARD_HEADERS:none}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+    whitelabel:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: ${RAKTAVEDA_API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${RAKTAVEDA_API_DOCS_ENABLED:false}
+
+logging:
+  level:
+    root: INFO
+    # These two can print SQL parameters (phone hashes, tokens). Keep them quiet.
+    org.springframework.jdbc.core: WARN
+    org.springframework.jdbc.core.StatementCreatorUtils: WARN
+
+raktaveda:
+  otp:
+    # When true, OTP codes are returned in API responses. Development ONLY.
+    dev-mode: ${OTP_DEV_MODE:false}
+    length: 6
+    ttl-minutes: 5
+    max-wrong-attempts: 3
+    max-requests-per-phone: 3
+    request-window-minutes: 10
+  tokens:
+    user-ttl-hours: 168
+    institution-ttl-hours: 12
+    admin-ttl-hours: 2
+  security:
+    allowed-origins: ${RAKTAVEDA_ALLOWED_ORIGINS:http://localhost:3000}
+    require-https: ${RAKTAVEDA_REQUIRE_HTTPS:false}
+  rate-limit:
+    auth-per-minute: 10
+    search-per-minute: 60
+    general-per-minute: 300
+    login-failure-limit: 5
+    # Needs review before real use: chat limits are per account, not per address.
+    chat-per-minute: 20
+    new-conversations-per-hour: 10
+    reports-per-hour: 10
+  # Needs review before real use: verify against current NBTC and MoHFW guidelines before launch.
+  # Eligibility is only an estimate. The blood bank decides (it also checks haemoglobin).
+  eligibility:
+    min-age-years: 18
+    max-age-years: 65
+    min-weight-kg: 45
+    min-days-between-donations: 120
+  donor:
+    # Needs review before real use (privacy): how long a location may stay stored without the donor refreshing it.
+    availability-ttl-hours: 12
+  # Needs review before real use: these are policy choices.
+  requests:
+    expiry-hours: 48
+    create-per-hour: 5
+    max-open-per-requester: 3
+    max-accepted-per-request: 10
+    retention-days: 90
+  notifications:
+    # "dev" only records that a notification was sent (count only, no personal data).
+    # To send real pushes, write a class that implements PushNotifier (for example with Firebase
+    # Cloud Messaging) and set RAKTAVEDA_PUSH_PROVIDER to its name. See PushNotifier.
+    provider: ${RAKTAVEDA_PUSH_PROVIDER:dev}
+  admin:
+    email: ${RAKTAVEDA_ADMIN_EMAIL:}
+    password: ${RAKTAVEDA_ADMIN_PASSWORD:}

@@ -1,0 +1,10 @@
+# Secrets & builds
+.env
+*.env
+!.env.example
+target/
+node_modules/
+dist/
+.DS_Store
+.idea/
+*.iml
