@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Raktaveda | Blood when it matters</title>
+<meta name="description" content="Find blood donors, blood banks and hospitals near you. Post an emergency request and connect in minutes.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C16 2 6 13 6 20a10 10 0 0 0 20 0C26 13 16 2 16 2z' fill='%23C3112B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#F2F5F9;--surface:#fff;--surface2:#F7F9FC;--ink:#0F1B2D;--muted:#5A6779;--line:#E1E7EF;
+  --brand:#C3112B;--brand2:#8E0B1F;--on-brand:#fff;--tint:#FDE9EC;--teal:#0E8C84;--tealtint:#DCF3F0;
+  --amber:#B45309;--ambertint:#FEF0D9;--shadow:0 1px 2px rgba(15,27,45,.06),0 12px 32px -12px rgba(15,27,45,.18);
+  --r:18px;--font:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;--display:'Fraunces',Georgia,serif;
+}
+:root[data-theme=dark]{
+  --bg:#12151A;--surface:#1B2027;--surface2:#222831;--ink:#EEF1F5;--muted:#9BA7B6;--line:#2D3440;
+  --brand:#FF7683;--brand2:#FF9AA3;--on-brand:#2A0A0F;--tint:#35262B;--teal:#55D3C6;--tealtint:#1E3636;
+  --amber:#F5B861;--ambertint:#37301F;--shadow:0 1px 2px rgba(0,0,0,.3),0 14px 34px -14px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--font);-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.12;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(2.4rem,5.2vw,4.1rem)}h2{font-size:clamp(1.7rem,3vw,2.4rem)}h3{font-size:1.25rem}
+p{margin:0 0 1em}a{color:var(--brand)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.muted{color:var(--muted)}.small{font-size:.875rem}.center{text-align:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.grow{flex:1}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.hide{display:none!important}
+/* header */
+header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:18px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font:700 1.35rem var(--display)}
+nav.main{display:flex;gap:4px;flex:1}
+nav.main a{padding:8px 14px;border-radius:999px;text-decoration:none;color:var(--ink);font-weight:600;font-size:.95rem}
+nav.main a:hover{background:var(--surface)}nav.main a.on{background:var(--tint);color:var(--brand)}
+.tools{display:flex;gap:8px;align-items:center}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center}
+select.lang{height:40px;border-radius:999px;border:1px solid var(--line);background:var(--surface);padding:0 12px;cursor:pointer}
+.burger{display:none}
+@media(max-width:860px){nav.main{position:fixed;inset:68px 0 auto 0;background:var(--surface);flex-direction:column;padding:12px 20px 20px;border-bottom:1px solid var(--line);transform:translateY(-130%);transition:transform .25s;z-index:40}
+nav.main.open{transform:none}.burger{display:grid}header.top .wrap{gap:10px}.brand{flex:1}}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:999px;border:1.5px solid transparent;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .15s,box-shadow .15s,background .15s;font-size:.96rem}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--brand);color:var(--on-brand);box-shadow:0 8px 20px -8px var(--brand)}
+.btn.primary:hover{box-shadow:0 12px 26px -8px var(--brand);transform:translateY(-1px)}
+.btn.ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}.btn.ghost:hover{border-color:var(--brand)}
+.btn.teal{background:var(--teal);color:#fff}.btn.danger{background:transparent;border-color:var(--brand);color:var(--brand)}
+.btn.sm{padding:7px 14px;font-size:.85rem}.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:.8rem;font-weight:700;background:var(--tint);color:var(--brand)}
+.pill.ok{background:var(--tealtint);color:var(--teal)}.pill.warn{background:var(--ambertint);color:var(--amber)}.pill.mute{background:var(--surface2);color:var(--muted)}
+section.block{padding:72px 0}
+/* hero */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#7E0A1D 0%,#B50F29 55%,#D8283F 100%);color:#fff}
+:root[data-theme=dark] .hero{background:linear-gradient(135deg,#2A1519 0%,#4A1E27 55%,#6A2A35 100%)}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center;padding-top:56px;padding-bottom:64px}
+.hero h1{color:#fff}.hero p.lead{font-size:1.15rem;opacity:.92;max-width:34em}
+.hero .btn.primary{background:#fff;color:#8E0B1F;box-shadow:0 12px 28px -10px rgba(0,0,0,.5)}
+.hero .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.hero-art{position:relative;aspect-ratio:1;max-width:460px;justify-self:center;width:100%}
+.hero-art svg{width:100%;height:100%;display:block}
+.chip-float{position:absolute;background:#fff;color:#8E0B1F;font:700 1rem var(--font);padding:8px 14px;border-radius:14px;box-shadow:0 14px 30px -12px rgba(0,0,0,.45);animation:bob 5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-9px)}}
+.ecg{stroke-dasharray:420;stroke-dashoffset:420;animation:ecg 3.2s linear infinite}
+@keyframes ecg{60%{stroke-dashoffset:0}100%{stroke-dashoffset:-420}}
+.ripple{transform-origin:50% 56%;animation:rip 4s ease-out infinite}
+@keyframes rip{0%{transform:scale(.6);opacity:.5}100%{transform:scale(1.25);opacity:0}}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}.hero-art{max-width:320px;order:-1}}
+/* quick search */
+.qs{margin-top:-34px;position:relative;z-index:5}
+.qs .card{display:grid;grid-template-columns:1.1fr 1fr auto;gap:16px;align-items:end}
+@media(max-width:860px){.qs .card{grid-template-columns:1fr}}
+label.f{display:block;font-weight:600;font-size:.85rem;margin-bottom:6px;color:var(--muted)}
+input[type=text],input[type=email],input[type=password],input[type=tel],input[type=number],input[type=date],select.in,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 18%,transparent)}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+.seg button{border:0;background:none;padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--brand);color:var(--on-brand)}
+/* steps */
+.steps{counter-reset:s}.step{position:relative;padding-left:64px;min-height:56px}
+.step::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:44px;height:44px;border-radius:14px;background:var(--tint);color:var(--brand);display:grid;place-items:center;font:700 1.3rem var(--display)}
+/* quotes */
+.quotes{position:relative;border-radius:28px;overflow:hidden;min-height:300px;color:#fff;box-shadow:var(--shadow)}
+.q-slide{position:absolute;inset:0;padding:48px;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:scale(1.02);transition:opacity .9s,transform 1.4s;pointer-events:none}
+.q-slide.on{opacity:1;transform:none;pointer-events:auto}
+.q-slide blockquote{margin:0;font:700 clamp(1.5rem,3.2vw,2.5rem)/1.2 var(--display);max-width:22em}
+.q-slide .by{margin-top:18px;opacity:.85;font-weight:600}
+.q-slide::after{content:"\201C";position:absolute;right:28px;top:-30px;font:700 15rem/1 var(--display);opacity:.12}
+.q0{background:linear-gradient(120deg,#8E0B1F,#D8283F)}.q1{background:linear-gradient(120deg,#0B6E6A,#17A398)}.q2{background:linear-gradient(120deg,#16315C,#2E64B5)}.q3{background:linear-gradient(120deg,#9A3412,#E0761F)}.q4{background:linear-gradient(120deg,#14532D,#2E9E5B)}
+.q-dots{position:absolute;left:48px;bottom:22px;display:flex;gap:8px;z-index:3}
+.q-dots button{width:10px;height:10px;border-radius:99px;border:0;background:rgba(255,255,255,.45);cursor:pointer;padding:0;transition:width .3s,background .3s}
+.q-dots button.on{width:34px;background:#fff}
+@media(max-width:600px){.q-slide{padding:28px}.q-dots{left:28px}}
+/* compat */
+.bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.bg-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 0;font:700 1.15rem var(--display);cursor:pointer;color:var(--ink);transition:all .15s}
+.bg-btn:hover{border-color:var(--brand)}.bg-btn.on{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.bg-badge{display:inline-grid;place-items:center;min-width:46px;height:46px;border-radius:14px;background:var(--brand);color:var(--on-brand);font:700 1.1rem var(--display);padding:0 8px}
+/* role cards */
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.role{position:relative;overflow:hidden;border-radius:24px;padding:28px;min-height:240px;color:#fff;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .25s,box-shadow .25s;box-shadow:var(--shadow);cursor:pointer;border:0;text-align:left}
+.role:hover{transform:translateY(-6px) rotate(-.4deg);box-shadow:0 24px 44px -18px rgba(0,0,0,.5)}
+.role svg.bgart{position:absolute;right:-24px;top:-14px;width:62%;opacity:.14}
+.role h3{color:#fff;font-size:1.55rem;margin-bottom:6px}.role p{margin:0 0 12px;opacity:.92;font-size:.95rem}
+.role .go{font-weight:700;display:inline-flex;gap:6px;align-items:center}
+.r-user{background:linear-gradient(150deg,#B50F29,#E0485B)}.r-inst{background:linear-gradient(150deg,#0B5E63,#17A398)}.r-admin{background:linear-gradient(150deg,#1B2A47,#3A5B94)}
+:root[data-theme=dark] .r-user{background:linear-gradient(150deg,#6A2A35,#A04555)}:root[data-theme=dark] .r-inst{background:linear-gradient(150deg,#1D4A4C,#2A8077)}:root[data-theme=dark] .r-admin{background:linear-gradient(150deg,#26344F,#44659C)}
+/* auth split */
+.auth{display:grid;grid-template-columns:.9fr 1.1fr;min-height:calc(100vh - 68px)}
+.auth-side{position:relative;overflow:hidden;color:#fff;padding:56px 44px;display:flex;flex-direction:column;justify-content:center}
+.auth-side h2{color:#fff}.auth-side ul{list-style:none;padding:0;margin:20px 0 0}.auth-side li{display:flex;gap:12px;margin-bottom:14px;opacity:.95}
+.auth-side li b{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:.8rem}
+.auth-main{display:grid;place-items:center;padding:40px 20px}.auth-box{width:100%;max-width:440px}
+@media(max-width:860px){.auth{grid-template-columns:1fr}.auth-side{padding:32px 24px}}
+.field{position:relative;margin-bottom:16px}
+.field input{padding:22px 14px 8px}.field label{position:absolute;left:15px;top:15px;color:var(--muted);transition:all .15s;pointer-events:none;font-size:1rem}
+.field input:focus+label,.field input:not(:placeholder-shown)+label{top:6px;font-size:.72rem;font-weight:700;color:var(--brand)}
+.field .eye{position:absolute;right:8px;top:8px;border:0;background:none;cursor:pointer;padding:6px 10px;color:var(--muted);font-weight:600}
+.otp{display:flex;gap:10px;justify-content:center;margin:18px 0}
+.otp input{width:48px;height:58px;text-align:center;font:700 1.5rem var(--display);padding:0}
+.err{background:var(--tint);color:var(--brand);padding:10px 14px;border-radius:12px;font-weight:600;font-size:.9rem;margin-bottom:14px}
+.note{background:var(--tealtint);color:var(--teal);padding:10px 14px;border-radius:12px;font-weight:600;font-size:.9rem;margin-bottom:14px}
+/* map */
+.mapbox{isolation:isolate;position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+.map{height:520px;background:var(--surface2);z-index:1}.map.sm{height:280px}
+.leaflet-container{font-family:var(--font)}
+.pin{width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;background:var(--brand);box-shadow:0 6px 14px rgba(0,0,0,.35);border:2px solid #fff}
+.pin span{transform:rotate(45deg);color:#fff;font-weight:800;font-size:.8rem}.pin.bank{background:var(--teal)}
+.me-dot{width:18px;height:18px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 8px rgba(37,99,235,.25)}
+.map-lock{position:absolute;inset:0;z-index:600;background:color-mix(in srgb,var(--bg) 60%,transparent);backdrop-filter:blur(3px);display:grid;place-items:center;padding:20px}
+.res{display:flex;gap:14px;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer;transition:border-color .15s}
+.res:hover,.res.on{border-color:var(--brand)}
+.res .ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--tint);color:var(--brand);font-weight:800}.res .ic.bank{background:var(--tealtint);color:var(--teal)}
+.list{display:grid;gap:10px;max-height:520px;overflow:auto;padding-right:4px}
+.find-grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+@media(max-width:900px){.find-grid{grid-template-columns:1fr}.map{height:380px}.list{max-height:none}}
+/* board */
+.ticket{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 24px;overflow:hidden}
+.ticket::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--line)}
+.ticket.CRITICAL::before{background:#E11D48}.ticket.HIGH::before{background:#EA580C}.ticket.MEDIUM::before{background:#CA8A04}.ticket.LOW::before{background:var(--teal)}
+@media(max-width:640px){.ticket{grid-template-columns:auto 1fr}.ticket .acts{grid-column:1/-1}}
+.lane{border:2px dashed var(--line);border-radius:20px;padding:22px;background:var(--surface)}
+/* dashboard */
+.dash{display:grid;grid-template-columns:230px 1fr;gap:22px;padding:28px 0 60px}
+.side{position:sticky;top:90px;align-self:start;display:flex;flex-direction:column;gap:4px}
+.side a{display:flex;gap:10px;align-items:center;padding:11px 14px;border-radius:12px;text-decoration:none;color:var(--ink);font-weight:600}
+.side a:hover{background:var(--surface)}.side a.on{background:var(--brand);color:var(--on-brand)}
+@media(max-width:860px){.dash{grid-template-columns:1fr}.side{position:static;flex-direction:row;overflow:auto}.side a{white-space:nowrap}}
+.stat{display:flex;gap:10px;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600;font-size:.8rem}
+.tbl{overflow:auto}
+.toggle{position:relative;width:58px;height:32px;border-radius:99px;background:var(--line);border:0;cursor:pointer;transition:background .2s;flex:none}
+.toggle::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on{background:var(--teal)}.toggle.on::after{transform:translateX(26px)}
+/* chat */
+.chat{display:grid;grid-template-columns:280px 1fr;gap:16px;height:560px}
+@media(max-width:860px){.chat{grid-template-columns:1fr;height:auto}}
+.convs{overflow:auto;display:grid;gap:8px;align-content:start}
+.conv{padding:12px 14px;border-radius:12px;border:1px solid var(--line);cursor:pointer;background:var(--surface)}.conv.on{border-color:var(--brand);background:var(--tint)}
+.thread{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden;min-height:420px}
+.msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:78%;padding:9px 14px;border-radius:16px;background:var(--surface2);align-self:flex-start;word-break:break-word}.msg.me{align-self:flex-end;background:var(--brand);color:var(--on-brand)}
+.msg small{display:block;opacity:.7;font-size:.7rem;margin-top:2px}.msg .rp{background:none;border:0;cursor:pointer;opacity:.55;font-size:.7rem;color:inherit;padding:0 0 0 8px}
+.composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+/* modal toast */
+.overlay{position:fixed;inset:0;background:rgba(8,12,20,.55);display:grid;place-items:center;z-index:200;padding:20px;animation:fade .15s}
+.modal{background:var(--surface);border-radius:22px;padding:28px;max-width:480px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+@keyframes fade{from{opacity:0}}
+#toasts{position:fixed;right:18px;bottom:18px;display:grid;gap:8px;z-index:300}
+.toast{background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;box-shadow:var(--shadow);animation:fade .2s}
+.toast.bad{background:#B91C1C;color:#fff}
+/* assistant */
+.fab{position:fixed;right:20px;bottom:20px;z-index:90;height:56px;padding:0 22px 0 16px;border-radius:99px;border:0;background:var(--brand);color:var(--on-brand);font-weight:700;display:flex;gap:10px;align-items:center;cursor:pointer;box-shadow:0 14px 30px -10px var(--brand)}
+.ast{position:fixed;right:20px;bottom:92px;z-index:91;width:min(380px,calc(100vw - 40px));height:480px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden}
+.ast header{padding:14px 18px;background:var(--brand);color:var(--on-brand);font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ast .msgs{background:var(--bg)}
+/* prose + footer */
+.prose{max-width:760px}.prose h2{margin-top:1.6em;font-size:1.5rem}.prose li{margin-bottom:.4em}
+footer.foot{background:var(--surface);border-top:1px solid var(--line);padding:40px 0 30px;margin-top:40px}
+.skel{background:linear-gradient(90deg,var(--surface2),var(--line),var(--surface2));background-size:200% 100%;animation:sk 1.2s infinite;border-radius:12px;height:70px}
+@keyframes sk{to{background-position:-200% 0}}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.view{animation:fade .3s;min-height:62vh}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ecg{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+<div id="modal-root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script>
+'use strict';
+/* ============ CONFIG ============ */
+const API_BASE = (window.RAKTAVEDA_API || (()=>{try{return localStorage.getItem('rv_api')}catch(e){return null}})() || 'http://localhost:8080').replace(/\/$/,'');
+const CONTACT_EMAIL = ''; // optional: shown on the Privacy and Terms pages when set
+const NOTTO_URL = 'https://notto.mohfw.gov.in/';
+const GROUPS = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+const COMPONENTS = ['WHOLE_BLOOD','PACKED_RED_CELLS','PLATELETS','PLASMA'];
+const URGENCIES = ['LOW','MEDIUM','HIGH','CRITICAL'];
+const COMPAT = { // standard ABO/Rh red-cell compatibility: recipient -> donors
+ 'A+':['A+','A-','O+','O-'],'A-':['A-','O-'],'B+':['B+','B-','O+','O-'],'B-':['B-','O-'],
+ 'AB+':GROUPS,'AB-':['A-','B-','AB-','O-'],'O+':['O+','O-'],'O-':['O-']};
+const CENTER = [22.9734,78.6569];
+
+/* ============ SMALL HELPERS ============ */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+class Raw{constructor(s){this.s=s}}
+const raw = s=>new Raw(s);
+const fmt = v=>v instanceof Raw?v.s:Array.isArray(v)?v.map(fmt).join(''):(v==null||v===false)?'':esc(v);
+const html = (st,...v)=>{let o=st[0];v.forEach((x,i)=>{o+=fmt(x)+st[i+1]});return new Raw(o)};
+const mount = (el,r)=>{el.innerHTML=r.s};
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+const when = iso=>iso?new Date(iso).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+const ago = iso=>{const m=Math.round((Date.now()-new Date(iso))/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
+const left = iso=>{const m=Math.round((new Date(iso)-Date.now())/60000);return m<=0?'expired':m<60?m+' min left':Math.round(m/60)+' h left'};
+const nice = s=>String(s||'').toLowerCase().replace(/_/g,' ').replace(/^./,c=>c.toUpperCase());
+const dir = (lat,lon)=>`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+
+/* ============ STATE ============ */
+const S = {token:store.get('rv_token'),role:store.get('rv_role'),inst:store.get('rv_inst'),
+  lang:store.get('rv_lang')||'en',theme:store.get('rv_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')};
+const cleanups=[];const onLeave=f=>cleanups.push(f);
+function applyTheme(){document.documentElement.dataset.theme=S.theme}
+applyTheme();
+
+/* ============ TRANSLATIONS ============ */
+const I18N={
+en:{home:'Home',find:'Find blood',board:'Request board',organ:'Organ donation',login:'Log in',logout:'Log out',dash:'Dashboard',
+ hero_t:'Blood, when it matters most.',hero_d:'Find donors, blood banks and hospitals near you. Post an emergency request and get help in minutes.',
+ hero_c1:'Post an emergency request',hero_c2:'Find blood near me',
+ qs_t:'Search nearby',qs_d:'Hospitals and blood banks around you, with phone numbers and directions.',all:'All',hospital:'Hospital',bank:'Blood bank',radius:'Distance',search_btn:'Search near me',
+ how_t:'How it works',s1t:'Tell us what you need',s1d:'Choose the blood group, component and urgency. Your exact location is never shown.',s2t:'Eligible donors are alerted',s2d:'Only compatible donors close by get the request.',s3t:'Donors say yes',s3d:'A donor’s phone number is shared only after they accept.',
+ compat_t:'Who can give to whom?',compat_d:'Pick a blood group to see which red-cell donors can help.',needs:'can receive red cells from',
+ em_t:'In an emergency, start here',em_d:'Post what you need and see who nearby can help.',
+ q1:'Every drop you give is a promise that someone will see the morning.',q2:'You may never meet them, but someone will always remember you.',q3:'It takes a few minutes to give. It can give a lifetime back.',q4:'Be the reason a family gets to say “he’s going to be fine”.',q5:'Heroes do not always wear capes. Sometimes they roll up a sleeve.',
+ roles_t:'Choose how you want to join',ru_t:'Donor or family',ru_d:'Give blood, or ask for it when someone you love needs it.',ri_t:'Hospital or blood bank',ri_d:'Post requests, chat with people and reach donors.',ra_t:'Administrator',ra_d:'Verify institutions and keep the platform safe.',
+ cta_t:'Ready to help?',cta_d:'Create a free account in under a minute.',
+ foot:'Blood when it matters.',privacy:'Privacy policy',terms:'Terms of use',
+ phone:'Phone number',send_code:'Send code',verify:'Verify and continue',email:'Email',password:'Password',continue:'Continue'},
+hi:{home:'होम',find:'रक्त खोजें',board:'अनुरोध बोर्ड',organ:'अंगदान',login:'लॉग इन',logout:'लॉग आउट',dash:'डैशबोर्ड',
+ hero_t:'जब ज़रूरत सबसे ज़्यादा हो, तब रक्त।',hero_d:'अपने आस-पास रक्तदाता, ब्लड बैंक और अस्पताल खोजें। आपात अनुरोध डालें और कुछ ही मिनटों में मदद पाएं।',
+ hero_c1:'आपात अनुरोध डालें',hero_c2:'मेरे पास रक्त खोजें',
+ qs_t:'आस-पास खोजें',qs_d:'आपके पास के अस्पताल और ब्लड बैंक, फ़ोन नंबर और रास्ते के साथ।',all:'सभी',hospital:'अस्पताल',bank:'ब्लड बैंक',radius:'दूरी',search_btn:'मेरे पास खोजें',
+ how_t:'यह कैसे काम करता है',s1t:'बताइए क्या चाहिए',s1d:'रक्त समूह, घटक और तात्कालिकता चुनें। आपकी सटीक लोकेशन कभी नहीं दिखती।',s2t:'योग्य दाताओं को सूचना',s2d:'केवल पास के संगत दाताओं को अनुरोध मिलता है।',s3t:'दाता हाँ कहते हैं',s3d:'दाता का फ़ोन नंबर उनके स्वीकार करने के बाद ही साझा होता है।',
+ compat_t:'कौन किसे दे सकता है?',compat_d:'रक्त समूह चुनें और देखें कौन से लाल रक्त कोशिका दाता मदद कर सकते हैं।',needs:'इनसे लाल रक्त कोशिकाएँ ले सकता है',
+ em_t:'आपात स्थिति में यहाँ से शुरू करें',em_d:'जो चाहिए वह लिखें और देखें पास में कौन मदद कर सकता है।',
+ q1:'आपकी दी हुई हर बूँद एक वादा है कि कोई सुबह देखेगा।',q2:'शायद आप उनसे कभी न मिलें, पर कोई आपको हमेशा याद रखेगा।',q3:'देने में कुछ मिनट लगते हैं। बदले में पूरी ज़िंदगी मिल सकती है।',q4:'वह वजह बनिए जिससे किसी परिवार को कहना पड़े, “वो ठीक हो जाएगा”।',q5:'हीरो हमेशा केप नहीं पहनते। कभी-कभी वे बस आस्तीन चढ़ाते हैं।',
+ roles_t:'चुनें आप कैसे जुड़ना चाहते हैं',ru_t:'दाता या परिवार',ru_d:'रक्त दें, या अपनों को ज़रूरत हो तो माँगें।',ri_t:'अस्पताल या ब्लड बैंक',ri_d:'अनुरोध डालें, लोगों से चैट करें और दाताओं तक पहुँचें।',ra_t:'प्रशासक',ra_d:'संस्थानों को सत्यापित करें और प्लेटफ़ॉर्म सुरक्षित रखें।',
+ cta_t:'मदद के लिए तैयार?',cta_d:'एक मिनट से कम में मुफ़्त खाता बनाएँ।',
+ foot:'जब ज़रूरत हो, तब रक्त।',privacy:'गोपनीयता नीति',terms:'उपयोग की शर्तें',
+ phone:'फ़ोन नंबर',send_code:'कोड भेजें',verify:'सत्यापित करें और आगे बढ़ें',email:'ईमेल',password:'पासवर्ड',continue:'आगे बढ़ें'},
+ko:{home:'홈',find:'혈액 찾기',board:'요청 게시판',organ:'장기 기증',login:'로그인',logout:'로그아웃',dash:'대시보드',
+ hero_t:'가장 필요한 순간의 혈액.',hero_d:'가까운 헌혈자, 혈액원, 병원을 찾아보세요. 긴급 요청을 올리면 몇 분 안에 도움을 받을 수 있습니다.',
+ hero_c1:'긴급 요청 올리기',hero_c2:'내 주변 혈액 찾기',
+ qs_t:'주변 검색',qs_d:'전화번호와 길찾기가 포함된 주변 병원과 혈액원.',all:'전체',hospital:'병원',bank:'혈액원',radius:'거리',search_btn:'내 주변 검색',
+ how_t:'이용 방법',s1t:'필요한 것을 알려주세요',s1d:'혈액형, 성분, 긴급도를 선택하세요. 정확한 위치는 공개되지 않습니다.',s2t:'적합한 헌혈자에게 알림',s2d:'가까이 있는 적합한 헌혈자에게만 요청이 전달됩니다.',s3t:'헌혈자가 수락합니다',s3d:'헌혈자의 전화번호는 수락한 후에만 공유됩니다.',
+ compat_t:'누가 누구에게 줄 수 있나요?',compat_d:'혈액형을 선택하면 적혈구를 줄 수 있는 헌혈자를 볼 수 있습니다.',needs:'적혈구를 받을 수 있는 혈액형',
+ em_t:'긴급할 때, 여기서 시작하세요',em_d:'필요한 것을 올리고 가까운 도움을 확인하세요.',
+ q1:'당신이 나눈 한 방울은 누군가의 내일을 약속합니다.',q2:'만나지 못해도 누군가는 당신을 영원히 기억할 것입니다.',q3:'주는 데는 몇 분이면 충분하지만, 평생을 돌려줄 수 있습니다.',q4:'한 가족이 “괜찮을 거예요”라고 말할 수 있는 이유가 되어 주세요.',q5:'영웅은 늘 망토를 입지 않습니다. 가끔은 소매를 걷어 올립니다.',
+ roles_t:'참여 방법을 선택하세요',ru_t:'헌혈자 또는 가족',ru_d:'헌혈하거나, 소중한 사람이 필요할 때 요청하세요.',ri_t:'병원 또는 혈액원',ri_d:'요청을 올리고, 채팅하고, 헌혈자에게 연락하세요.',ra_t:'관리자',ra_d:'기관을 검증하고 플랫폼을 안전하게 지킵니다.',
+ cta_t:'도울 준비가 되셨나요?',cta_d:'1분 안에 무료 계정을 만드세요.',
+ foot:'필요한 순간의 혈액.',privacy:'개인정보 처리방침',terms:'이용 약관',
+ phone:'전화번호',send_code:'코드 보내기',verify:'확인하고 계속',email:'이메일',password:'비밀번호',continue:'계속'},
+zh:{home:'首页',find:'寻找血液',board:'求助看板',organ:'器官捐献',login:'登录',logout:'退出',dash:'控制台',
+ hero_t:'最需要的时候，有血可用。',hero_d:'查找附近的献血者、血库和医院。发布紧急求助，几分钟内获得帮助。',
+ hero_c1:'发布紧急求助',hero_c2:'查找我附近的血液',
+ qs_t:'搜索附近',qs_d:'附近的医院和血库，附带电话和导航。',all:'全部',hospital:'医院',bank:'血库',radius:'距离',search_btn:'搜索我附近',
+ how_t:'使用方式',s1t:'告诉我们您的需求',s1d:'选择血型、血液成分和紧急程度。您的精确位置不会被显示。',s2t:'通知符合条件的献血者',s2d:'只有附近匹配的献血者会收到请求。',s3t:'献血者答应帮助',s3d:'只有献血者接受后，才会分享其电话号码。',
+ compat_t:'谁可以给谁？',compat_d:'选择血型，查看哪些红细胞献血者可以帮忙。',needs:'可接受红细胞的来源',
+ em_t:'紧急情况，从这里开始',em_d:'发布您的需求，看看附近谁能帮忙。',
+ q1:'你献出的每一滴血，都是对某人能看到明天的承诺。',q2:'你也许永远不会见到他们，但总有人会永远记得你。',q3:'献血只需几分钟，却能回馈一生。',q4:'成为一个家庭能说出“他会没事的”的理由。',q5:'英雄不一定披着斗篷，有时只是卷起衣袖。',
+ roles_t:'选择您的加入方式',ru_t:'献血者或家属',ru_d:'献血，或在亲人需要时寻求帮助。',ri_t:'医院或血库',ri_d:'发布需求、在线交流并联系献血者。',ra_t:'管理员',ra_d:'审核机构，守护平台安全。',
+ cta_t:'准备好帮忙了吗？',cta_d:'不到一分钟即可创建免费账户。',
+ foot:'血，在最需要的时候。',privacy:'隐私政策',terms:'使用条款',
+ phone:'手机号码',send_code:'发送验证码',verify:'验证并继续',email:'邮箱',password:'密码',continue:'继续'},
+es:{home:'Inicio',find:'Buscar sangre',board:'Tablón de solicitudes',organ:'Donación de órganos',login:'Iniciar sesión',logout:'Cerrar sesión',dash:'Panel',
+ hero_t:'Sangre, cuando más importa.',hero_d:'Encuentra donantes, bancos de sangre y hospitales cerca de ti. Publica una solicitud urgente y recibe ayuda en minutos.',
+ hero_c1:'Publicar solicitud urgente',hero_c2:'Buscar sangre cerca',
+ qs_t:'Buscar cerca',qs_d:'Hospitales y bancos de sangre a tu alrededor, con teléfonos e indicaciones.',all:'Todos',hospital:'Hospital',bank:'Banco de sangre',radius:'Distancia',search_btn:'Buscar cerca de mí',
+ how_t:'Cómo funciona',s1t:'Cuéntanos qué necesitas',s1d:'Elige grupo sanguíneo, componente y urgencia. Tu ubicación exacta nunca se muestra.',s2t:'Se avisa a donantes aptos',s2d:'Solo los donantes compatibles y cercanos reciben la solicitud.',s3t:'Los donantes dicen que sí',s3d:'El teléfono del donante se comparte solo cuando acepta.',
+ compat_t:'¿Quién puede donar a quién?',compat_d:'Elige un grupo sanguíneo para ver qué donantes de glóbulos rojos pueden ayudar.',needs:'puede recibir glóbulos rojos de',
+ em_t:'En una emergencia, empieza aquí',em_d:'Publica lo que necesitas y mira quién puede ayudar cerca.',
+ q1:'Cada gota que das es una promesa de que alguien verá el amanecer.',q2:'Quizá nunca los conozcas, pero alguien siempre te recordará.',q3:'Donar lleva unos minutos. Puede devolver toda una vida.',q4:'Sé la razón por la que una familia pueda decir “va a estar bien”.',q5:'Los héroes no siempre llevan capa. A veces se arremangan.',
+ roles_t:'Elige cómo quieres unirte',ru_t:'Donante o familiar',ru_d:'Dona sangre, o pídela cuando alguien que quieres la necesite.',ri_t:'Hospital o banco de sangre',ri_d:'Publica solicitudes, chatea y llega a los donantes.',ra_t:'Administrador',ra_d:'Verifica instituciones y mantén la plataforma segura.',
+ cta_t:'¿Listo para ayudar?',cta_d:'Crea una cuenta gratis en menos de un minuto.',
+ foot:'Sangre cuando importa.',privacy:'Política de privacidad',terms:'Términos de uso',
+ phone:'Número de teléfono',send_code:'Enviar código',verify:'Verificar y continuar',email:'Correo electrónico',password:'Contraseña',continue:'Continuar'}
+};
+const LANGS={en:'English',hi:'हिन्दी',ko:'한국어',zh:'简体中文',es:'Español'};
+const t = k=>(I18N[S.lang]&&I18N[S.lang][k])||I18N.en[k]||k;
+
+/* ============ API ============ */
+class ApiError extends Error{constructor(status,body){super((body&&body.message)||'ERROR');this.status=status;this.code=body&&body.error;this.key=body&&body.message;this.body=body}}
+const ERR={VALIDATION_FAILED:'Please check the details you entered.',OTP_INVALID:'That code is not correct.',OTP_EXPIRED:'That code has expired. Ask for a new one.',OTP_LOCKED:'Too many wrong attempts. Ask for a new code.',
+ INVALID_CREDENTIALS:'Email or password is not correct.',AUTH_LOCKED:'Too many attempts. Please wait a while and try again.',AUTH_REQUIRED:'Please log in to continue.',
+ PROFILE_REQUIRED:'Complete your donor profile first.',AVAILABILITY_REQUIRED:'Switch on “Available now” and set your location first.',
+ INSTITUTION_NOT_FOUND:'This institution cannot be messaged on Raktaveda.',ASSISTANT_DAILY_LIMIT:'You have used today’s questions. Try again tomorrow.',
+ RATE_LIMITED:'Too many requests. Please slow down for a moment.',FORBIDDEN:'You do not have access to this.',NOT_FOUND:'We could not find that.'};
+const errText = e=>{if(!(e instanceof ApiError))return 'Cannot reach the server. Check that the backend is running.';return ERR[e.code]||ERR[e.key]||(e.status===429?ERR.RATE_LIMITED:'Something went wrong. Please try again.')};
+async function api(path,o={}){
+  const h={};if(S.token&&o.auth!==false)h.Authorization='Bearer '+S.token;
+  let body;if(o.form){body=o.form}else if(o.body!==undefined){h['Content-Type']='application/json';body=JSON.stringify(o.body)}
+  let r;try{r=await fetch(API_BASE+path,{method:o.method||(body?'POST':'GET'),headers:h,body})}catch(e){throw new ApiError(0,null)}
+  if(r.status===204)return null;
+  let data=null;try{data=await r.json()}catch(e){}
+  if(r.ok||(o.okStatuses&&o.okStatuses.includes(r.status)))return data;
+  if(r.status===401&&S.token&&o.auth!==false){setSession(null);toast('Please log in again.',true);go('#/login')}
+  throw new ApiError(r.status,data);
+}
+function setSession(tok,role,inst){S.token=tok||null;S.role=role||null;S.inst=inst||null;store.set('rv_token',S.token);store.set('rv_role',S.role);store.set('rv_inst',S.inst)}
+
+/* ============ UI PIECES ============ */
+function toast(msg,bad){const d=document.createElement('div');d.className='toast'+(bad?' bad':'');d.textContent=msg;$('#toasts').append(d);setTimeout(()=>d.remove(),4200)}
+function modal(content){const r=$('#modal-root');mount(r,html`<div class="overlay" data-act="closeModalBg"><div class="modal" role="dialog" aria-modal="true">${content}</div></div>`)}
+const closeModal=()=>{$('#modal-root').innerHTML=''};
+function confirmBox(title,text,okLabel){return new Promise(res=>{modal(html`<h3>${title}</h3><p class="muted">${text}</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="mNo">Cancel</button><button class="btn primary" data-act="mYes">${okLabel||'Confirm'}</button></div>`);acts.mYes=()=>{closeModal();res(true)};acts.mNo=()=>{closeModal();res(false)}})}
+function askText(title,label,okLabel,opt){return new Promise(res=>{modal(html`<h3>${title}</h3><form data-form="askText"><label class="f">${label}</label><textarea id="askv" rows="3" maxlength="300" ${opt?'':'required'}></textarea><div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" class="btn ghost" data-act="mNo">Cancel</button><button class="btn primary">${okLabel}</button></div></form>`);forms.askText=()=>{const v=$('#askv').value.trim();closeModal();res(v)};acts.mNo=()=>{closeModal();res(null)}})}
+const spinner=n=>html`<div class="grid">${raw(Array(n||3).fill('<div class="skel"></div>').join(''))}</div>`;
+const bloodBadge=g=>html`<span class="bg-badge">${g}</span>`;
+const dropSvg=(s=28)=>raw(`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="dg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E0485B"/><stop offset="1" stop-color="#9B0F25"/></linearGradient></defs><path d="M16 2C16 2 6 13 6 20a10 10 0 0 0 20 0C26 13 16 2 16 2z" fill="url(#dg)"/><path d="M8.5 20.5h4l2-4 3 7 2-3h3.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+const ico={moon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+ sun:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>',
+ menu:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+ chat:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.7 7L3 21l2-5.5A8 8 0 1 1 21 12z"/></svg>',
+ phone:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>'};
+
+/* ============ MAPS ============ */
+const TILES={light:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',dark:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+ esri:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'};
+function makeMap(el,center,zoom){
+  if(!window.L){el.innerHTML='<div class="empty">The map could not load. Check your internet connection and refresh.</div>';return null}
+  const m=L.map(el,{zoomControl:true,scrollWheelZoom:true}).setView(center||CENTER,zoom||5);
+  let errs=0;let layer=L.tileLayer(S.theme==='dark'?TILES.dark:TILES.light,{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(m);
+  layer.on('tileerror',()=>{if(++errs===4){m.removeLayer(layer);L.tileLayer(TILES.esri,{maxZoom:19,attribution:'Tiles &copy; Esri'}).addTo(m)}});
+  setTimeout(()=>m.invalidateSize(),150);onLeave(()=>{try{m.remove()}catch(e){}});return m;
+}
+const pinIcon=(label,bank)=>L.divIcon({className:'',html:`<div class="pin ${bank?'bank':''}"><span>${label}</span></div>`,iconSize:[36,36],iconAnchor:[18,36],popupAnchor:[0,-34]});
+const meIcon=()=>L.divIcon({className:'',html:'<div class="me-dot"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+const getPos=()=>new Promise((res,rej)=>{if(!navigator.geolocation)return rej(new Error('nogeo'));navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lon:p.coords.longitude}),rej,{enableHighAccuracy:false,timeout:12000,maximumAge:60000})});
+/* location picker: click map or use GPS; writes to hidden inputs lat/lon in the form */
+function mountPicker(host,form,start){
+  mount(host,html`<div class="mapbox"><div class="map sm" id="pickmap"></div></div><div class="row" style="margin-top:8px"><button type="button" class="btn ghost sm" id="useGps">Use my current location</button><span class="small muted" id="pickTxt">Tap the map to set the location.</span></div>`);
+  const m=makeMap($('#pickmap',host),start?[start.lat,start.lon]:CENTER,start?14:5);let mk=null;
+  const set=(lat,lon,fly)=>{form.elements.latitude.value=lat.toFixed(5);form.elements.longitude.value=lon.toFixed(5);$('#pickTxt',host).textContent='Location set.';if(!m)return;if(mk)mk.setLatLng([lat,lon]);else mk=L.marker([lat,lon],{icon:pinIcon('•')}).addTo(m);if(fly)m.setView([lat,lon],15)};
+  if(m)m.on('click',e=>set(e.latlng.lat,e.latlng.lng));
+  if(start)set(start.lat,start.lon);
+  $('#useGps',host).onclick=async()=>{try{const p=await getPos();set(p.lat,p.lon,true)}catch(e){toast('Could not get your location. Tap the map instead.',true)}};
+}
+
+/* ============ EVENTS ============ */
+const acts={};const forms={};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const n=el.dataset.act;
+  if(n==='closeModalBg'){if(e.target===el)closeModal();return}
+  if(acts[n]){e.preventDefault();acts[n](el,e)}});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();const fn=forms[f.dataset.form];if(fn)fn(f,e)});
+async function busy(btn,fn){if(btn)btn.disabled=true;try{return await fn()}finally{if(btn)btn.disabled=false}}
+
+/* ============ ROUTER ============ */
+const routes=[];const route=(re,fn)=>routes.push([re,fn]);
+const go=h=>{if(location.hash===h)render();else location.hash=h};
+function parseHash(){const h=location.hash.replace(/^#/,'')||'/';const [p,q]=h.split('?');return{parts:p.split('/').filter(Boolean),q:Object.fromEntries(new URLSearchParams(q||''))}}
+async function render(){
+  if(typeof astOpen!=='undefined'&&window.__navd)astOpen=false;window.__navd=1;
+  cleanups.splice(0).forEach(f=>{try{f()}catch(e){}});
+  const {parts,q}=parseHash();const key=parts[0]||'home';
+  const fn=PAGES[key]||PAGES.notfound;
+  renderShell(key);
+  const v=$('#view');window.scrollTo(0,0);
+  try{await fn(v,parts.slice(1),q)}catch(e){console.error(e);mount(v,html`<div class="wrap" style="padding:60px 0"><div class="card empty"><h3>Something went wrong</h3><p>${errText(e)}</p></div></div>`)}
+}
+window.addEventListener('hashchange',render);
+const PAGES={};
+
+/* ============ SHELL ============ */
+function renderShell(key){
+  const links=[['home','#/',t('home')],['find','#/find',t('find')],['help','#/help',t('board')],['organ','#/organ',t('organ')]];
+  const isDash=key==='dashboard';
+  const head=html`<header class="top"><div class="wrap">
+    <a class="brand" href="#/" aria-label="Raktaveda home">${dropSvg(30)}Raktaveda</a>
+    <nav class="main" id="mainnav">${links.map(l=>html`<a href="${l[1]}" class="${(l[0]==='home'?key==='home':l[0]===key)?'on':''}">${l[2]}</a>`)}</nav>
+    <div class="tools">
+      <select class="lang" data-act="lang" aria-label="Language" onchange="setLang(this.value)">${Object.entries(LANGS).map(([k,v])=>html`<option value="${k}" ${k===S.lang?'selected':''}>${v}</option>`)}</select>
+      <button class="icon-btn" data-act="theme" aria-label="Toggle dark mode">${raw(S.theme==='dark'?ico.sun:ico.moon)}</button>
+      ${S.token?html`<a class="btn ${isDash?'ghost':'primary'} sm" href="#/dashboard">${t('dash')}</a>`:html`<a class="btn primary sm" href="#/login">${t('login')}</a>`}
+      <button class="icon-btn burger" data-act="burger" aria-label="Menu">${raw(ico.menu)}</button>
+    </div></div></header>`;
+  const foot=html`<footer class="foot"><div class="wrap row between" style="align-items:flex-start">
+    <div><div class="brand" style="margin-bottom:6px">${dropSvg(26)}Raktaveda</div><div class="muted small">${t('foot')}</div></div>
+    <div class="row small"><a href="#/privacy">${t('privacy')}</a><a href="#/terms">${t('terms')}</a><a href="#/organ">${t('organ')}</a></div></div></footer>`;
+  const app=$('#app');
+  if(!$('#view')||app.dataset.shell!==key+S.lang+S.theme+(S.token?1:0)){
+    mount(app,html`${head}<main id="view" class="view"></main>${(key==='login'||key==='dashboard')?'':foot}`);
+    app.dataset.shell=key+S.lang+S.theme+(S.token?1:0);
+  }
+  renderAssistantFab();
+}
+window.setLang=v=>{S.lang=v;store.set('rv_lang',v);document.documentElement.lang=v;render()};
+acts.theme=()=>{S.theme=S.theme==='dark'?'light':'dark';store.set('rv_theme',S.theme);applyTheme();render()};
+acts.burger=()=>$('#mainnav').classList.toggle('open');
+acts.logout=async()=>{try{await api('/api/auth/logout',{method:'POST'})}catch(e){}disconnectWs();setSession(null);toast('You are logged out.');go('#/')};
+/* ============ ART ============ */
+const heroArt=()=>raw(`<svg viewBox="0 0 400 400" role="img" aria-label="Blood drop with a heartbeat line"><defs>
+<linearGradient id="hg" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="#FFB3BC"/><stop offset=".45" stop-color="#FF4D63"/><stop offset="1" stop-color="#A50E26"/></linearGradient>
+<radialGradient id="hs" cx=".35" cy=".3" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+<circle class="ripple" cx="200" cy="224" r="150" fill="none" stroke="#fff" stroke-width="2"/><circle class="ripple" style="animation-delay:1.3s" cx="200" cy="224" r="150" fill="none" stroke="#fff" stroke-width="2"/><circle class="ripple" style="animation-delay:2.6s" cx="200" cy="224" r="150" fill="none" stroke="#fff" stroke-width="2"/>
+<path d="M200 36C200 36 88 170 88 254a112 112 0 0 0 224 0C312 170 200 36 200 36z" fill="url(#hg)"/>
+<path d="M200 36C200 36 88 170 88 254a112 112 0 0 0 224 0C312 170 200 36 200 36z" fill="url(#hs)"/>
+<path class="ecg" d="M110 262h52l22-46 34 96 26-62 14 12h32" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+const roleArt=raw('<svg class="bgart" viewBox="0 0 100 100"><path d="M50 4C50 4 18 40 18 64a32 32 0 0 0 64 0C82 40 50 4 50 4z" fill="#fff"/></svg>');
+
+/* ============ HOME ============ */
+let quoteIdx=0;
+PAGES.home=async v=>{
+  const qs=[1,2,3,4,5];
+  mount(v,html`
+  <section class="hero"><div class="wrap">
+    <div><h1>${t('hero_t')}</h1><p class="lead">${t('hero_d')}</p>
+      <div class="row" style="margin-top:26px"><a class="btn primary" href="#/dashboard/requests">${t('hero_c1')}</a><a class="btn ghost" href="#/find">${t('hero_c2')}</a></div></div>
+    <div class="hero-art">${heroArt()}<span class="chip-float" style="left:2%;top:16%">O−</span><span class="chip-float" style="right:0;top:34%;animation-delay:1.2s">A+</span><span class="chip-float" style="left:10%;bottom:8%;animation-delay:2.2s">B+</span></div>
+  </div></section>
+
+  <section class="qs"><div class="wrap"><form class="card" data-form="quick">
+    <div><h3 style="margin-bottom:4px">${t('qs_t')}</h3><div class="muted small">${t('qs_d')}</div></div>
+    <div class="row"><div class="seg" id="qtype">${[['',t('all')],['HOSPITAL',t('hospital')],['BLOOD_BANK',t('bank')]].map((x,i)=>html`<button type="button" data-act="qtype" data-v="${x[0]}" class="${i?'':'on'}">${x[1]}</button>`)}</div>
+      <select class="in" id="qr" style="width:auto" aria-label="${t('radius')}">${[5,10,25,50].map(n=>html`<option value="${n}" ${n===10?'selected':''}>${n} km</option>`)}</select></div>
+    <button class="btn primary">${t('search_btn')}</button></form></div></section>
+
+  <section class="block"><div class="wrap">
+    <h2 class="center">${t('how_t')}</h2>
+    <div class="grid g3 steps" style="margin-top:34px">
+      ${[1,2,3].map(n=>html`<div class="step"><h3 style="margin-bottom:6px">${t('s'+n+'t')}</h3><p class="muted">${t('s'+n+'d')}</p></div>`)}
+    </div></div></section>
+
+  <section class="block" style="padding-top:0"><div class="wrap grid g2" style="align-items:center;gap:36px">
+    <div><h2>${t('compat_t')}</h2><p class="muted">${t('compat_d')}</p>
+      <div class="bg-grid" style="max-width:380px">${GROUPS.map((g,i)=>html`<button class="bg-btn ${i===6?'on':''}" data-act="compat" data-g="${g}">${g}</button>`)}</div></div>
+    <div class="card" id="compatOut" aria-live="polite"></div></div></section>
+
+  <section class="block" style="padding-top:0"><div class="wrap">
+    <div class="row between" style="margin-bottom:18px"><div><h2 style="margin:0">${t('em_t')}</h2><div class="muted">${t('em_d')}</div></div>
+    <a class="btn primary" href="#/dashboard/requests">${t('hero_c1')}</a></div>
+    <div class="quotes" id="quotes">${qs.map((n,i)=>html`<div class="q-slide q${i} ${i===0?'on':''}"><blockquote>${t('q'+n)}</blockquote><div class="by">Raktaveda</div></div>`)}
+      <div class="q-dots">${qs.map((n,i)=>html`<button data-act="qgo" data-i="${i}" aria-label="Quote ${i+1}" class="${i===0?'on':''}"></button>`)}</div></div>
+  </div></section>
+
+  <section class="block" style="padding-top:0"><div class="wrap"><h2 class="center" style="margin-bottom:28px">${t('roles_t')}</h2>
+    <div class="roles">
+      <a class="role r-user" href="#/login/user">${roleArt}<h3>${t('ru_t')}</h3><p>${t('ru_d')}</p><span class="go">${t('login')} ›</span></a>
+      <a class="role r-inst" href="#/login/institution">${roleArt}<h3>${t('ri_t')}</h3><p>${t('ri_d')}</p><span class="go">${t('login')} ›</span></a>
+      <a class="role r-admin" href="#/login/admin">${roleArt}<h3>${t('ra_t')}</h3><p>${t('ra_d')}</p><span class="go">${t('login')} ›</span></a>
+    </div></div></section>`);
+  compat('O+');
+  let timer=setInterval(()=>showQuote((quoteIdx+1)%5),6500);onLeave(()=>clearInterval(timer));
+  acts.qgo=el=>{clearInterval(timer);showQuote(+el.dataset.i);timer=setInterval(()=>showQuote((quoteIdx+1)%5),6500)};
+};
+function showQuote(i){quoteIdx=i;$$('.q-slide').forEach((s,k)=>s.classList.toggle('on',k===i));$$('.q-dots button').forEach((s,k)=>s.classList.toggle('on',k===i))}
+function compat(g){$$('.bg-btn').forEach(b=>b.classList.toggle('on',b.dataset.g===g));const o=$('#compatOut');if(!o)return;
+  mount(o,html`<div class="row" style="margin-bottom:12px">${bloodBadge(g)}<b>${t('needs')}</b></div><div class="row">${COMPAT[g].map(x=>html`<span class="bg-badge" style="background:var(--tealtint);color:var(--teal)">${x}</span>`)}</div>`)}
+acts.compat=el=>compat(el.dataset.g);
+acts.qtype=el=>{$$('#qtype button').forEach(b=>b.classList.toggle('on',b===el))};
+forms.quick=()=>{const ty=($('#qtype .on')||{dataset:{v:''}}).dataset.v;go(`#/find?auto=1&type=${ty}&r=${$('#qr').value}`)};
+
+/* ============ FIND BLOOD ============ */
+PAGES.find=async(v,_,q)=>{
+  const st={type:q.type||'',r:+q.r||10,pos:S.pos||null,markers:[],layer:null};
+  const canSearch=S.token&&(S.role==='USER'||S.role==='INSTITUTION');
+  mount(v,html`<div class="wrap" style="padding:34px 20px 20px"><h1 style="font-size:clamp(2rem,4vw,3rem)">Find blood near you</h1>
+    <p class="muted" style="max-width:42em">Hospitals and blood banks around you, nearest first. Call them or open directions in one tap.</p>
+    <div class="card flat row" style="margin-bottom:16px">
+      <div class="seg" id="ftype">${[['',t('all')],['HOSPITAL',t('hospital')],['BLOOD_BANK',t('bank')]].map(x=>html`<button data-act="ftype" data-v="${x[0]}" class="${x[0]===st.type?'on':''}">${x[1]}</button>`)}</div>
+      <div class="row" style="min-width:230px"><label class="small muted" for="fr">${t('radius')}</label><input id="fr" type="range" min="1" max="50" value="${st.r}" style="flex:1;accent-color:var(--brand)"><b id="frv" style="min-width:56px">${st.r} km</b></div>
+      <button class="btn primary" id="fgo">${t('search_btn')}</button></div>
+    <div class="find-grid"><div class="list" id="flist"><div class="empty">Press <b>${t('search_btn')}</b> to see what is close to you.</div></div>
+      <div class="mapbox"><div class="map" id="fmap"></div>
+      ${canSearch?'':S.token?html`<div class="map-lock"><div class="card center" style="max-width:360px"><h3>Search is for donors and institutions</h3><p class="muted">Administrator accounts cannot search nearby.</p></div></div>`
+        :html`<div class="map-lock"><div class="card center" style="max-width:380px"><h3>Log in to see who is nearby</h3><p class="muted">We ask you to log in so that phone numbers and locations are only shown to real people.</p><div class="row" style="justify-content:center"><a class="btn primary" href="#/login/user">Log in with phone</a><a class="btn ghost" href="#/login/institution">Institution</a></div></div></div>`}
+      </div></div></div>`);
+  const map=makeMap($('#fmap'),CENTER,5);
+  st.layer=window.L&&map?L.layerGroup().addTo(map):null;
+  acts.ftype=el=>{st.type=el.dataset.v;$$('#ftype button').forEach(b=>b.classList.toggle('on',b===el))};
+  $('#fr').oninput=e=>{st.r=+e.target.value;$('#frv').textContent=st.r+' km'};
+  const draw=(rows)=>{
+    const list=$('#flist');
+    if(st.layer)st.layer.clearLayers();st.markers=[];
+    if(!rows.length){mount(list,html`<div class="empty"><h3>Nothing found within ${st.r} km</h3><p>Try a larger distance.</p></div>`);return}
+    const pts=[];
+    mount(list,html`${rows.map((r,i)=>html`<div class="res" data-act="focus" data-i="${i}" tabindex="0"><div class="ic ${r.type==='BLOOD_BANK'?'bank':''}">${r.type==='BLOOD_BANK'?'BB':'H'}</div>
+      <div class="grow"><b>${r.name}</b><div class="small muted">${nice(r.type)} · ${(+r.distanceKm).toFixed(1)} km away</div><div class="small muted">${r.address||''}</div>
+      <div class="row" style="margin-top:8px;gap:8px">${r.publicPhone?html`<a class="btn ghost sm" href="tel:${r.publicPhone}">${raw(ico.phone)} Call</a>`:''}<a class="btn ghost sm" target="_blank" rel="noopener" href="${dir(r.latitude,r.longitude)}">Directions</a>${S.role==='USER'?html`<button class="btn primary sm" data-act="msg" data-id="${r.id}">Message</button>`:''}</div></div></div>`)}`);
+    if(window.L&&map){rows.forEach((r,i)=>{const mk=L.marker([r.latitude,r.longitude],{icon:pinIcon(r.type==='BLOOD_BANK'?'B':'H',r.type==='BLOOD_BANK')}).addTo(st.layer);
+      mk.bindPopup(`<b>${esc(r.name)}</b><br>${esc(nice(r.type))} · ${(+r.distanceKm).toFixed(1)} km<br>${r.publicPhone?`<a href="tel:${esc(r.publicPhone)}">${esc(r.publicPhone)}</a><br>`:''}<a target="_blank" rel="noopener" href="${dir(r.latitude,r.longitude)}">Get directions</a>`);
+      mk.on('click',()=>$$('.res').forEach((x,k)=>x.classList.toggle('on',k===i)));st.markers.push(mk);pts.push([r.latitude,r.longitude])});
+      if(st.pos)pts.push([st.pos.lat,st.pos.lon]);map.fitBounds(pts,{padding:[50,50],maxZoom:15})}
+  };
+  acts.focus=el=>{const i=+el.dataset.i,mk=st.markers[i];$$('.res').forEach((x,k)=>x.classList.toggle('on',k===i));if(mk){map.setView(mk.getLatLng(),Math.max(map.getZoom(),14));mk.openPopup()}};
+  acts.msg=async el=>busy(el,async()=>{try{const c=await api('/api/chat/conversations',{body:{institutionId:el.dataset.id}});go('#/dashboard/chat/'+c.id)}catch(e){toast(errText(e),true)}});
+  const run=async()=>{
+    if(!canSearch){if(!S.token)toast('Log in to search nearby.',true);return}
+    const btn=$('#fgo');await busy(btn,async()=>{
+      try{if(!st.pos){st.pos=await getPos();S.pos=st.pos}}catch(e){toast('Allow location access in your browser to search near you.',true);return}
+      if(window.L&&map){if(st.me)map.removeLayer(st.me);st.me=L.marker([st.pos.lat,st.pos.lon],{icon:meIcon()}).addTo(map);map.setView([st.pos.lat,st.pos.lon],12)}
+      mount($('#flist'),spinner(4));
+      try{const p=new URLSearchParams({lat:st.pos.lat,lon:st.pos.lon,radiusKm:st.r,limit:50});if(st.type)p.set('type',st.type);draw(await api('/api/search/institutions/nearby?'+p))}
+      catch(e){mount($('#flist'),html`<div class="empty">${errText(e)}</div>`)}});
+  };
+  $('#fgo').onclick=run;if(q.auto&&canSearch)run();
+};
+
+/* ============ REQUEST BOARD (open requests for donors) ============ */
+const ticket=(r,acts_)=>html`<div class="ticket ${r.urgency}">${bloodBadge(r.bloodGroup)}
+  <div><div class="row" style="gap:8px"><b>${nice(r.component)}</b><span class="pill ${r.urgency==='CRITICAL'||r.urgency==='HIGH'?'':'warn'}">${nice(r.urgency)}</span>${r.needsTransport?html`<span class="pill mute">Needs transport</span>`:''}</div>
+  <div class="small muted">${r.units} unit${r.units>1?'s':''}${r.distanceKm!=null?html` · about ${r.distanceKm} km away`:''} · posted ${ago(r.createdAt)} · ${left(r.expiresAt)}</div></div>
+  <div class="acts row">${acts_}</div></div>`;
+PAGES.help=async v=>{
+  const head=html`<div class="wrap" style="padding:34px 20px 0"><h1 style="font-size:clamp(2rem,4vw,3rem)">Request board</h1><p class="muted" style="max-width:44em">Open blood requests near you, most urgent first. We only show the distance, never the exact place.</p></div>`;
+  if(!S.token){
+    mount(v,html`${head}<div class="wrap" style="padding-bottom:40px"><div class="grid g3">
+      ${[['Requests go out','A hospital or family posts what is needed: group, component, units and urgency.'],['Nearby donors see it','Only compatible donors within 25 km get the request, with distance and details.'],['One tap to help','Accept and the requester can reach you. Decline and nothing is shared.']].map(x=>html`<div class="lane"><h3>${x[0]}</h3><p class="muted" style="margin:0">${x[1]}</p></div>`)}</div>
+      <div class="card center" style="margin-top:22px"><h3>Log in to see the requests near you</h3><div class="row" style="justify-content:center"><a class="btn primary" href="#/login/user">I am a donor</a><a class="btn ghost" href="#/login/institution">I am an institution</a></div></div></div>`);return}
+  mount(v,html`${head}<div class="wrap" style="padding-bottom:50px" id="board">${spinner(3)}</div>`);
+  const b=$('#board');
+  try{
+    if(S.role==='USER'){const rows=await api('/api/donor/requests');
+      mount(b,rows.length?html`<div class="grid">${rows.map(r=>ticket(r,r.myResponse?html`<span class="pill ${r.myResponse==='ACCEPTED'?'ok':'mute'}">${nice(r.myResponse)}</span>`:html`<button class="btn primary sm" data-act="respond" data-id="${r.id}" data-do="accept">I can help</button><button class="btn ghost sm" data-act="respond" data-id="${r.id}" data-do="decline">Not now</button>`))}</div>`
+        :html`<div class="card empty"><h3>No open requests near you right now</h3><p>When someone close by needs your blood group, it will appear here.</p><a class="btn ghost" href="#/dashboard">Check my availability</a></div>`)}
+    else if(S.role==='INSTITUTION'){const rows=await api('/api/requests/mine');
+      mount(b,rows.length?html`<div class="grid">${rows.map(r=>ticket(r,html`<a class="btn ghost sm" href="#/dashboard/requests/${r.id}">Manage</a>`))}</div>`:html`<div class="card empty"><h3>You have no open requests</h3><a class="btn primary" href="#/dashboard/requests">Post a request</a></div>`)}
+    else mount(b,html`<div class="card empty">The board is for donors and institutions.</div>`);
+  }catch(e){
+    const need=e.code==='PROFILE_REQUIRED'||e.code==='AVAILABILITY_REQUIRED';
+    mount(b,html`<div class="card empty"><h3>${need?'One quick step first':'Could not load the board'}</h3><p>${errText(e)}</p>${need?html`<a class="btn primary" href="#/dashboard">Set up my profile</a>`:''}</div>`)}
+};
+acts.respond=el=>busy(el,async()=>{try{await api(`/api/donor/requests/${el.dataset.id}/${el.dataset.do}`,{method:'POST'});toast(el.dataset.do==='accept'?'Thank you. The requester can now contact you.':'Okay, we will not ask again for this one.');render()}catch(e){toast(errText(e),true)}});
+
+/* ============ ORGAN DONATION ============ */
+PAGES.organ=async v=>{
+  mount(v,html`<section class="hero" style="background:linear-gradient(135deg,#0B5E63,#17A398 70%,#35C2A8)"><div class="wrap" style="grid-template-columns:1fr;padding-top:64px;padding-bottom:64px"><div style="max-width:700px"><h1>One decision. Many tomorrows.</h1><p class="lead">Long after we are gone, a part of us can still give someone a morning, a birthday, a walk home. That is the quiet power of organ donation.</p>
+    <a class="btn primary" style="color:#0B5E63" target="_blank" rel="noopener" href="${NOTTO_URL}">Open the official portal</a></div></div></section>
+  <section class="block"><div class="wrap"><div class="grid g3">
+    ${[['Generosity that outlives us','There is almost nothing a person can leave behind that matters more than a second chance for someone else.'],['A gift for a family you will never meet','Behind every transplant is a family that had almost run out of hope.'],['It starts with a conversation','Tell the people closest to you what you want. When they know, they can honour it.']].map(x=>html`<div class="card"><h3>${x[0]}</h3><p class="muted" style="margin:0">${x[1]}</p></div>`)}</div>
+    <div class="card" style="margin-top:22px;max-width:760px"><h2>How to take part</h2><div class="steps grid">
+      <div class="step"><b>Register on the official portal</b><div class="muted">Use the national organ and tissue donation portal to record your wish.</div></div>
+      <div class="step"><b>Tell your family</b><div class="muted">Share your decision with the people who would be asked to carry it out.</div></div>
+      <div class="step"><b>Keep your details up to date</b><div class="muted">Review your registration whenever your contact details change.</div></div></div>
+      <p style="margin:22px 0 0"><b>Please use the official portal to register.</b></p>
+      <a class="btn primary" style="margin-top:10px" target="_blank" rel="noopener" href="${NOTTO_URL}">notto.mohfw.gov.in</a></div></div></section>`);
+};
+
+/* ============ LEGAL ============ */
+const legalWrap=(title,body)=>html`<div class="wrap" style="padding:40px 20px 20px"><div class="prose"><h1 style="font-size:clamp(2rem,4vw,3rem)">${title}</h1><p class="muted">Last updated 26 November 2026</p>${body}${CONTACT_EMAIL?html`<h2>Contact</h2><p>Questions about this page: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>`:''}</div></div>`;
+PAGES.privacy=async v=>mount(v,legalWrap('Privacy policy',raw(`
+<p>Raktaveda connects people who need blood with donors, hospitals and blood banks. This page explains what we collect, why, and the choices you have. We collect only what is needed to make a match, and nothing more.</p>
+<h2>What we collect</h2><ul>
+<li><b>Donors and families:</b> your phone number, and if you become a donor, your blood group, date of birth, weight and last donation date.</li>
+<li><b>Institutions:</b> name, type, licence number, email, two phone numbers, address and map position.</li>
+<li><b>Location:</b> only the position you choose to share. A donor’s location is stored only while “Available now” is on and is removed when you switch it off. We do not keep a history of where you have been.</li>
+<li><b>Requests and chat:</b> the details of a blood request, the replies to it, and messages exchanged between a user and a verified institution.</li></ul>
+<h2>How we protect it</h2><ul>
+<li>Phone numbers and dates of birth are encrypted when stored.</li>
+<li>One-time codes and login tokens are stored only as irreversible hashes. Institution passwords are hashed.</li>
+<li>Codes expire quickly and lock after repeated wrong attempts.</li>
+<li>Logs do not contain phone numbers, codes, tokens or exact locations.</li>
+<li>Sensitive actions such as verification, requests, reports and admin decisions are written to an audit log.</li></ul>
+<h2>Who sees what</h2><ul>
+<li>A requester sees a donor only as a number and a masked contact until the donor accepts. After acceptance, the donor’s phone number is shown to that requester.</li>
+<li>Donors see the distance and details of a request, never the requester’s exact location.</li>
+<li>Only the two people in a conversation can read it. If a message is reported, the administrators can read that message to decide what to do.</li>
+<li>Institutions appear on the map only after an administrator has verified them.</li></ul>
+<h2>The Rakta assistant</h2><p>Questions you type to the assistant are checked to remove phone numbers, emails and dates of birth before they are processed. We do not store your question or the answer. We count how many questions you ask each day so the service stays fair for everyone.</p>
+<h2>We never sell your data</h2><p>We do not sell personal data, and we do not sell blood or organs. We do not show advertising.</p>
+<h2>Your choices</h2><ul><li>Switch off “Available now” at any time to remove your shared location.</li><li>Delete your account from your dashboard. You confirm twice (a password or code, and typing DELETE). Your personal data is then removed.</li><li>Log out to end your session. Sessions also expire on their own.</li></ul>
+<h2>Retention</h2><p>Personal data is kept only as long as your account is active. Audit entries record what happened but are kept free of contact details.</p>
+<h2>Children</h2><p>Raktaveda is for adults. Donors must meet the age requirement shown in their eligibility check.</p>
+<h2>Changes</h2><p>If we change this policy, the date at the top will change. Continuing to use Raktaveda means you accept the updated policy.</p>`)));
+PAGES.terms=async v=>mount(v,legalWrap('Terms of use',raw(`
+<p>By creating an account or using Raktaveda, you agree to these terms.</p>
+<h2>What Raktaveda is</h2><p>Raktaveda is a connection platform. It helps people who need blood find donors, hospitals and blood banks. We do not collect, store, test or supply blood, and we never sell blood or organs.</p>
+<h2>No promises about donors or supply</h2><p>We cannot promise that a donor will respond or attend, or that blood will be available. In a medical emergency, call your local emergency number or go directly to the nearest hospital.</p>
+<h2>Eligibility is an estimate</h2><p>The eligibility result in your dashboard is a guide based on age, weight and time since your last donation. The blood bank or hospital makes the final decision after its own checks, including haemoglobin. Always follow the advice of medical professionals.</p>
+<h2>Your account</h2><ul><li>Give accurate information and keep your login details private.</li><li>Donors: set “Available now” only when you can really donate.</li><li>Institutions: you must hold a valid licence. Your account can act only after an administrator verifies it, and may be suspended if information is wrong.</li></ul>
+<h2>Using the service fairly</h2><ul><li>Post a request only for a real need.</li><li>Do not harass, spam, mislead, or ask for payment for blood. Do not share another person’s contact details.</li><li>Do not try to break, overload or bypass the security of the service.</li></ul>
+<h2>Chat and reports</h2><p>Chat is for coordinating blood needs. You can report any message. Administrators may review reported messages and may limit or suspend accounts that break these terms.</p>
+<h2>Rakta assistant</h2><p>The assistant gives general information about donating and using Raktaveda. It is not a doctor and cannot give medical advice, doses or diagnoses.</p>
+<h2>Organ donation</h2><p>Raktaveda only points you to the official national portal. Pledges are made there, not here.</p>
+<h2>Availability and liability</h2><p>We work to keep Raktaveda running but cannot guarantee it will always be available or error free. To the extent allowed by law, Raktaveda is not liable for outcomes that depend on third parties such as donors, hospitals and blood banks.</p>
+<h2>Ending your account</h2><p>You can delete your account at any time from your dashboard. We may suspend accounts that break these terms.</p>
+<h2>Changes</h2><p>We may update these terms. The date at the top shows the latest version. Continuing to use Raktaveda means you accept the changes.</p>`)));
+PAGES.notfound=async v=>mount(v,html`<div class="wrap" style="padding:80px 20px"><div class="card empty"><h2>Page not found</h2><a class="btn primary" href="#/">Back to home</a></div></div>`);
+/* ============ LOGIN ============ */
+const AUTH={cid:null,kind:null,len:6};
+const sideBullets=b=>html`<ul>${b.map(x=>html`<li><b>✓</b><span>${x}</span></li>`)}</ul>`;
+const otpHtml=n=>html`<div class="otp" id="otp">${Array.from({length:n},(_,i)=>html`<input inputmode="numeric" maxlength="1" autocomplete="${i?'off':'one-time-code'}" data-i="${i}" aria-label="Digit ${i+1}">`)}</div>`;
+function wireOtp(){const ins=$$('#otp input');ins.forEach((el,i)=>{
+  el.addEventListener('input',()=>{el.value=el.value.replace(/\D/g,'').slice(-1);if(el.value&&ins[i+1])ins[i+1].focus()});
+  el.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!el.value&&ins[i-1])ins[i-1].focus()});
+  el.addEventListener('paste',e=>{const d=(e.clipboardData.getData('text')||'').replace(/\D/g,'');if(!d)return;e.preventDefault();ins.forEach((x,k)=>x.value=d[k]||'');(ins[Math.min(d.length,ins.length-1)]).focus()})});ins[0]&&ins[0].focus()}
+const readOtp=()=>$$('#otp input').map(i=>i.value).join('');
+const sideFor=k=>({
+ user:{cls:'r-user',h:'Welcome back, lifesaver.',b:['Your phone number is never shown until you accept a request','Switch availability on or off whenever you like','Delete your data any time']},
+ institution:{cls:'r-inst',h:'For hospitals and blood banks.',b:['Verified institutions appear on the map','Post requests and reach nearby donors','Two-step sign in protects your account']},
+ admin:{cls:'r-admin',h:'Keep Raktaveda safe.',b:['Verify and review institutions','Moderate reported messages','Every action is recorded in the audit log']}}[k]);
+PAGES.login=async(v,[kind])=>{
+  if(S.token){go('#/dashboard');return}
+  if(!kind){
+    mount(v,html`<div class="wrap" style="padding:56px 20px"><h1 class="center">Who’s logging in?</h1><p class="center muted" style="margin-bottom:34px">Pick the one that describes you. You can come back and use a different one any time.</p>
+    <div class="roles" style="max-width:1000px;margin:0 auto">
+     <a class="role r-user" href="#/login/user" style="min-height:300px">${roleArt}<h3>${t('ru_t')}</h3><p>Sign in with your phone number. No password to remember.</p><span class="go">Continue with phone ›</span></a>
+     <a class="role r-inst" href="#/login/institution" style="min-height:300px">${roleArt}<h3>${t('ri_t')}</h3><p>Email, password and a code we email you.</p><span class="go">Continue with email ›</span></a>
+     <a class="role r-admin" href="#/login/admin" style="min-height:300px">${roleArt}<h3>${t('ra_t')}</h3><p>For the Raktaveda team.</p><span class="go">Administrator sign in ›</span></a></div>
+    <p class="center muted" style="margin-top:30px">New hospital or blood bank? <a href="#/register/institution">Register your institution</a></p></div>`);return}
+  if(!['user','institution','admin'].includes(kind)){go('#/login');return}
+  AUTH.kind=kind;AUTH.cid=null;const sd=sideFor(kind);
+  const stepOne=kind==='user'
+   ?html`<h2>Log in with your phone</h2><p class="muted">We will send a one-time code to your phone.</p><div id="aerr"></div>
+     <form data-form="otpReq"><div class="field"><input type="tel" name="phone" id="ph" placeholder=" " required autocomplete="tel" maxlength="20"><label for="ph">${t('phone')} (with country code)</label></div><button class="btn primary" style="width:100%">${t('send_code')}</button></form>`
+   :html`<h2>${kind==='admin'?'Administrator sign in':'Institution sign in'}</h2><p class="muted">Enter your email and password. We will then send a code to your email.</p><div id="aerr"></div>
+     <form data-form="pwLogin"><div class="field"><input type="email" name="email" id="em" placeholder=" " required autocomplete="username" maxlength="254"><label for="em">${t('email')}</label></div>
+     <div class="field"><input type="password" name="password" id="pw" placeholder=" " required autocomplete="current-password" maxlength="72"><label for="pw">${t('password')}</label><button type="button" class="eye" data-act="eye">Show</button></div>
+     <button class="btn primary" style="width:100%">${t('continue')}</button></form>${kind==='institution'?html`<p class="muted small center" style="margin-top:18px">New here? <a href="#/register/institution">Register your institution</a></p>`:''}`;
+  mount(v,html`<div class="auth"><aside class="auth-side ${sd.cls}" style="${kind==='user'?'background:linear-gradient(150deg,#8E0B1F,#D8283F)':kind==='institution'?'background:linear-gradient(150deg,#0B5E63,#17A398)':'background:linear-gradient(150deg,#1B2A47,#3A5B94)'}">
+    <svg viewBox="0 0 100 100" style="position:absolute;right:-60px;bottom:-60px;width:340px;opacity:.14"><path d="M50 4C50 4 18 40 18 64a32 32 0 0 0 64 0C82 40 50 4 50 4z" fill="#fff"/></svg>
+    <div style="position:relative"><div class="brand" style="color:#fff;margin-bottom:26px">${dropSvg(34)}Raktaveda</div><h2>${sd.h}</h2>${sideBullets(sd.b)}
+    <p style="margin-top:28px"><a href="#/login" style="color:#fff">‹ Choose a different role</a></p></div></aside>
+    <div class="auth-main"><div class="auth-box" id="abox">${stepOne}</div></div></div>`);
+};
+const stepTwo=(sub,devCode,len)=>{AUTH.len=devCode?devCode.length:(len||6);
+  mount($('#abox'),html`<h2>Enter the code</h2><p class="muted">${sub}</p><div id="aerr"></div>
+  ${devCode?html`<div class="note">Code for this session: <b>${devCode}</b> <button class="btn ghost sm" type="button" data-act="fillOtp" data-c="${devCode}">Fill it in</button></div>`:''}
+  <form data-form="otpVerify">${otpHtml(AUTH.len)}<button class="btn primary" style="width:100%">${t('verify')}</button></form>
+  <p class="center small muted" style="margin-top:14px"><a href="#/login/${AUTH.kind}" data-act="again">Start again</a></p>`);wireOtp()};
+const showErr=e=>{const b=$('#aerr');if(b)mount(b,html`<div class="err" role="alert">${errText(e)}</div>`)};
+acts.eye=el=>{const i=$('#pw');i.type=i.type==='password'?'text':'password';el.textContent=i.type==='password'?'Show':'Hide'};
+acts.fillOtp=el=>{[...el.dataset.c].forEach((c,i)=>{const x=$$('#otp input')[i];if(x)x.value=c})};
+acts.again=()=>{AUTH.cid=null;render()};
+forms.otpReq=f=>busy($('button',f),async()=>{try{const r=await api('/api/auth/user/otp/request',{auth:false,body:{phone:f.elements.phone.value.replace(/[\s-]/g,'')}});AUTH.cid=r.challengeId;stepTwo('We sent a code to your phone. It works for a few minutes.',r.devCode)}catch(e){showErr(e)}});
+forms.pwLogin=f=>busy($('button.primary',f),async()=>{try{const r=await api(`/api/auth/${AUTH.kind}/login`,{auth:false,body:{email:f.elements.email.value.trim(),password:f.elements.password.value}});AUTH.cid=r.challengeId;stepTwo('We emailed you a code. Enter it to finish signing in.',r.devCode)}catch(e){showErr(e)}});
+forms.otpVerify=f=>busy($('button',f),async()=>{
+  const code=readOtp();if(code.length<4){showErr(new ApiError(400,{error:'OTP_INVALID'}));return}
+  try{const path=AUTH.kind==='user'?'/api/auth/user/otp/verify':'/api/auth/second-step/verify';
+    const r=await api(path,{auth:false,body:{challengeId:AUTH.cid,code}});setSession(r.token,r.role);
+    try{const me=await api('/api/auth/me');setSession(r.token,r.role,me.institutionStatus||null)}catch(e){}
+    toast('Welcome to Raktaveda.');go('#/dashboard')}catch(e){showErr(e)}});
+
+/* ============ INSTITUTION REGISTRATION ============ */
+PAGES.register=async(v,[kind])=>{
+  mount(v,html`<div class="auth"><aside class="auth-side" style="background:linear-gradient(150deg,#0B5E63,#17A398)"><div style="position:relative"><div class="brand" style="color:#fff;margin-bottom:26px">${dropSvg(34)}Raktaveda</div><h2>Bring your institution on board.</h2>
+    ${sideBullets(['An administrator verifies your licence before you go live','Appear on the map for people searching nearby','Post requests and chat with donors and families'])}</div></aside>
+  <div class="auth-main"><div class="auth-box" style="max-width:520px" id="rbox"><h2>Register your institution</h2><div id="aerr"></div>
+  <form data-form="register" class="grid">
+    <div class="field"><input name="name" id="r1" placeholder=" " required maxlength="200"><label for="r1">Institution name</label></div>
+    <div><label class="f">Type</label><div class="seg"><button type="button" class="on" data-act="rtype" data-v="HOSPITAL">Hospital</button><button type="button" data-act="rtype" data-v="BLOOD_BANK">Blood bank</button></div><input type="hidden" name="type" value="HOSPITAL"></div>
+    <div class="field"><input name="licenceNumber" id="r2" placeholder=" " required pattern="[A-Za-z0-9/.\\- ]{3,100}" maxlength="100"><label for="r2">Licence number</label></div>
+    <div class="field"><input type="email" name="email" id="r3" placeholder=" " required maxlength="254"><label for="r3">Official email</label></div>
+    <div class="field"><input type="password" name="password" id="pw" placeholder=" " required minlength="12" maxlength="72" autocomplete="new-password"><label for="pw">Password (12+ characters, letters and numbers)</label><button type="button" class="eye" data-act="eye">Show</button></div>
+    <div class="grid g2"><div class="field"><input type="tel" name="publicPhone" id="r4" placeholder=" " required maxlength="20"><label for="r4">Public phone</label></div><div class="field"><input type="tel" name="emergencyPhone" id="r5" placeholder=" " required maxlength="20"><label for="r5">Emergency phone</label></div></div>
+    <div class="field"><input name="address" id="r6" placeholder=" " maxlength="300"><label for="r6">Address</label></div>
+    <div><label class="f">Where are you? Tap the map.</label><div id="rpick"></div></div>
+    <input type="hidden" name="latitude"><input type="hidden" name="longitude">
+    <button class="btn primary">Submit for verification</button></form></div></div></div>`);
+  mountPicker($('#rpick'),$('form[data-form=register]'));
+};
+acts.rtype=el=>{$$('[data-act=rtype]').forEach(b=>b.classList.toggle('on',b===el));$('input[name=type]').value=el.dataset.v};
+forms.register=f=>busy($('button.primary',f),async()=>{
+  if(!f.elements.latitude.value){mount($('#aerr'),html`<div class="err">Tap the map (or use your current location) so people can find you.</div>`);return}
+  if(!/^(?=.*[A-Za-z])(?=.*[0-9]).{12,72}$/.test(f.elements.password.value)){mount($('#aerr'),html`<div class="err">Password needs at least 12 characters with letters and numbers.</div>`);return}
+  const b={};['name','type','licenceNumber','email','password','publicPhone','emergencyPhone','address'].forEach(k=>b[k]=f.elements[k].value.trim());b.password=f.elements.password.value;b.latitude=+f.elements.latitude.value;b.longitude=+f.elements.longitude.value;
+  try{await api('/api/auth/institution/register',{auth:false,body:b});
+    mount($('#rbox'),html`<div class="center"><div style="font-size:3rem">✅</div><h2>Thank you. You are registered.</h2><p class="muted">An administrator will check your licence and verify your institution. You can log in now, and you will be able to act once you are verified.</p><a class="btn primary" href="#/login/institution">Log in</a></div>`)}catch(e){showErr(e)}});
+/* ============ DASHBOARD ============ */
+const TABS={USER:[['overview','My profile'],['requests','Blood requests'],['chat','Messages'],['account','Account']],
+ INSTITUTION:[['overview','Overview'],['requests','Blood requests'],['chat','Messages'],['account','Account']],
+ ADMIN:[['institutions','Institutions'],['reports','Reports'],['audit','Audit log'],['import','Import data']]};
+PAGES.dashboard=async(v,[tab,id])=>{
+  if(!S.token){go('#/login');return}
+  const tabs=TABS[S.role]||[];tab=tab||tabs[0][0];
+  if(!tabs.find(x=>x[0]===tab)){go('#/dashboard');return}
+  mount(v,html`<div class="wrap dash"><nav class="side" aria-label="Dashboard">${tabs.map(x=>html`<a href="#/dashboard/${x[0]}" class="${x[0]===tab?'on':''}">${x[1]}</a>`)}
+    <a href="#/find">Find blood</a><a href="#/help">Request board</a><a href="#" data-act="logout">${t('logout')}</a></nav><div id="dc">${spinner(2)}</div></div>`);
+  const c=$('#dc');const fn=DASH[S.role+':'+tab];
+  if(fn)await fn(c,id);
+};
+const DASH={};
+
+/* ---- donor profile ---- */
+DASH['USER:overview']=async c=>{
+  let p=null;try{p=await api('/api/donor/profile')}catch(e){if(!(e instanceof ApiError&&(e.status===404||e.code==='PROFILE_REQUIRED')))throw e}
+  p=p||{};const el=p.eligibility;
+  mount(c,html`<h2>Your donor profile</h2>
+  <div class="grid g2">
+   <div class="card"><div class="row between" style="flex-wrap:nowrap"><div><h3 style="margin:0">Available now</h3><div class="small muted">${p.available?'Nearby requests can reach you.':'You are hidden. Switch on when you can donate.'}</div></div>
+     <button class="toggle ${p.available?'on':''}" role="switch" aria-checked="${!!p.available}" aria-label="Available now" data-act="avail"></button></div>
+     <p class="small muted" style="margin:14px 0 0">Your location is stored only while this is on, and removed when you switch it off.</p></div>
+   <div class="card">${el?html`<div class="row"><span class="pill ${el.eligible?'ok':'warn'}">${el.eligible?'You may be able to donate':'Not eligible right now'}</span></div>
+     ${(el.reasons||[]).length?html`<ul>${el.reasons.map(r=>html`<li>${nice(String(r).split('.').pop())}</li>`)}</ul>`:''}${el.nextEligibleDate?html`<p class="small">Next possible date: <b>${el.nextEligibleDate}</b></p>`:''}
+     <p class="small muted" style="margin:0">This is only an estimate. The blood bank makes the final decision after checking your haemoglobin.</p>`:html`<h3>Eligibility</h3><p class="muted">Save your details to see an estimate.</p>`}</div></div>
+  <form class="card grid" style="margin-top:16px" data-form="profile"><h3 style="margin:0">Your details</h3>
+   <div class="grid g3"><div><label class="f">Blood group</label><select class="in" name="bloodGroup" required><option value="">Select</option>${GROUPS.map(g=>html`<option ${p.bloodGroup===g?'selected':''}>${g}</option>`)}</select></div>
+   <div><label class="f">Date of birth</label><input type="date" name="dateOfBirth" required value="${p.dateOfBirth||''}"></div>
+   <div><label class="f">Weight (kg)</label><input type="number" name="weightKg" min="30" max="250" step="0.1" required value="${p.weightKg||''}"></div>
+   <div><label class="f">Last donation (if any)</label><input type="date" name="lastDonationDate" value="${p.lastDonationDate||''}"></div></div>
+   <div><button class="btn primary">Save details</button></div></form>`);
+  c._p=p;
+};
+forms.profile=f=>busy($('button',f),async()=>{const e=f.elements;const b={bloodGroup:e.bloodGroup.value,dateOfBirth:e.dateOfBirth.value,weightKg:+e.weightKg.value,lastDonationDate:e.lastDonationDate.value||null};
+  try{await api('/api/donor/profile',{method:'PUT',body:b});toast('Profile saved.');render()}catch(e2){toast(errText(e2),true)}});
+acts.avail=el=>busy(el,async()=>{const on=!el.classList.contains('on');
+  try{if(on){let pos;try{pos=await getPos()}catch(e){toast('Allow location access so nearby requests can reach you.',true);return}
+      await api('/api/donor/availability',{method:'PUT',body:{available:true,latitude:pos.lat,longitude:pos.lon}});toast('You are available now.')}
+    else{await api('/api/donor/availability',{method:'PUT',body:{available:false}});toast('You are hidden. Your location was removed.')}
+    render()}catch(e){toast(errText(e),true)}});
+
+/* ---- institution overview ---- */
+const STATUS_INFO={PENDING:['warn','Waiting for verification','An administrator is checking your licence. You can log in, but you cannot post requests or chat yet.'],VERIFIED:['ok','Verified','You are visible on the map and can post requests and chat.'],REJECTED:['','Not verified','Your registration was not approved. Please contact the administrators.'],SUSPENDED:['','Suspended','Your account is paused. Please contact the administrators.']};
+DASH['INSTITUTION:overview']=async c=>{
+  let inst=S.inst;try{const me=await api('/api/auth/me');inst=me.institutionStatus;setSession(S.token,S.role,inst)}catch(e){}
+  const i=STATUS_INFO[inst]||['mute',nice(inst),''];
+  mount(c,html`<h2>Welcome</h2><div class="card"><span class="pill ${i[0]}">${i[1]}</span><p style="margin:12px 0 0">${i[2]}</p></div>
+   <div class="grid g2" style="margin-top:16px"><a class="card role r-inst" style="min-height:160px;box-shadow:none" href="#/dashboard/requests"><h3>Post a blood request</h3><p>Reach compatible donors close to you.</p></a>
+   <a class="card role r-admin" style="min-height:160px;box-shadow:none" href="#/dashboard/chat"><h3>Messages</h3><p>Talk with people who contacted you.</p></a></div>`);
+};
+
+/* ---- requests (user + institution) ---- */
+DASH['USER:requests']=DASH['INSTITUTION:requests']=async(c,id)=>{
+  if(id)return requestDetail(c,id);
+  const rows=await api('/api/requests/mine');
+  mount(c,html`<div class="row between"><h2 style="margin:0">Blood requests</h2></div>
+  <form class="card grid" style="margin:16px 0" data-form="newreq"><h3 style="margin:0">Post a new request</h3>
+   <div class="grid g3"><div><label class="f">Blood group</label><select class="in" name="bloodGroup">${GROUPS.map(g=>html`<option>${g}</option>`)}</select></div>
+   <div><label class="f">Component</label><select class="in" name="component">${COMPONENTS.map(g=>html`<option value="${g}">${nice(g)}</option>`)}</select></div>
+   <div><label class="f">Units (1 to 10)</label><input type="number" name="units" min="1" max="10" value="1" required></div>
+   <div><label class="f">Urgency</label><select class="in" name="urgency">${URGENCIES.map(g=>html`<option ${g==='HIGH'?'selected':''} value="${g}">${nice(g)}</option>`)}</select></div></div>
+   <div><label class="f">Where is it needed?</label><div id="rqpick"></div></div><input type="hidden" name="latitude"><input type="hidden" name="longitude">
+   <div><button class="btn primary">Send request</button></div></form>
+  <h3>Your requests</h3>${rows.length?html`<div class="grid">${rows.map(r=>ticket(r,html`<span class="pill mute">${nice(r.status)}</span><a class="btn ghost sm" href="#/dashboard/requests/${r.id}">Open</a>`))}</div>`:html`<div class="card empty">You have not posted any requests yet.</div>`}`);
+  mountPicker($('#rqpick'),$('form[data-form=newreq]'),S.pos);
+};
+forms.newreq=f=>busy($('button.primary',f),async()=>{const e=f.elements;
+  if(!e.latitude.value){toast('Set the location on the map first.',true);return}
+  try{const r=await api('/api/requests',{body:{bloodGroup:e.bloodGroup.value,component:e.component.value,units:+e.units.value,urgency:e.urgency.value,latitude:+e.latitude.value,longitude:+e.longitude.value}});
+    toast('Request sent to nearby donors.');go('#/dashboard/requests/'+(r&&r.id||''))}catch(er){toast(errText(er),true)}});
+async function requestDetail(c,id){
+  const draw=async()=>{
+    let r;try{r=await api('/api/requests/'+id)}catch(e){mount(c,html`<div class="card empty">${errText(e)}</div>`);return}
+    const open=!['CANCELLED','CLOSED','FULFILLED','EXPIRED'].includes(String(r.status).toUpperCase());const inst=S.role==='INSTITUTION';
+    mount(c,html`<a href="#/dashboard/requests">‹ All requests</a>
+     <div class="card" style="margin:12px 0"><div class="row between"><div class="row">${bloodBadge(r.bloodGroup)}<div><h3 style="margin:0">${nice(r.component)} · ${r.units} unit${r.units>1?'s':''}</h3><div class="small muted">${nice(r.urgency)} · posted ${ago(r.createdAt)} · ${left(r.expiresAt)}</div></div></div><span class="pill ${open?'ok':'mute'}">${nice(r.status)}</span></div>
+     ${r.donorCounts?html`<div class="grid g3" style="margin-top:16px">${[['Within 5 km',r.donorCounts.within5Km],['Within 10 km',r.donorCounts.within10Km],['Within 25 km',r.donorCounts.within25Km]].map(x=>html`<div class="card flat center"><div style="font:700 2rem var(--display)">${x[1]}</div><div class="small muted">${x[0]} · compatible donors available</div></div>`)}</div>`:''}
+     ${open?html`<div class="row" style="margin-top:16px">${inst?html`<label class="row small"><button class="toggle ${r.needsTransport?'on':''}" data-act="transport" data-id="${id}" data-on="${!!r.needsTransport}" aria-label="Needs transport"></button> We need transport arranged</label>`:''}<button class="btn danger sm" data-act="cancelReq" data-id="${id}">Cancel request</button></div>`:''}</div>
+     <h3>Donor responses</h3>${(r.responses||[]).length?html`<div class="card tbl"><table><thead><tr><th>Donor</th><th>Blood group</th><th>Status</th><th>Contact</th><th></th></tr></thead><tbody>${r.responses.map(x=>html`<tr><td>#${x.donorNumber}</td><td>${x.bloodGroup}</td><td><span class="pill ${x.status==='ACCEPTED'?'ok':'mute'}">${nice(x.status)}</span></td>
+       <td>${x.phone?html`<a href="tel:${x.phone}">${x.phone}</a>`:x.contactMasked||'Hidden until they accept'}</td>
+       <td>${inst&&x.status==='ACCEPTED'&&open?html`<button class="btn teal sm" data-act="confirmDon" data-id="${id}" data-rid="${x.responseId}">Confirm donation</button>`:''}</td></tr>`)}</tbody></table></div>`:html`<div class="card empty">No responses yet. Donors nearby have been alerted.</div>`}`);
+  };
+  await draw();const timer=setInterval(()=>{if(location.hash.includes(id))draw()},15000);onLeave(()=>clearInterval(timer));acts.reload=draw;
+}
+acts.transport=el=>busy(el,async()=>{try{await api(`/api/requests/${el.dataset.id}/transport`,{method:'PUT',body:{needsTransport:el.dataset.on!=='true'}});acts.reload()}catch(e){toast(errText(e),true)}});
+acts.cancelReq=async el=>{if(!await confirmBox('Cancel this request?','Donors will no longer see it.','Yes, cancel it'))return;try{await api(`/api/requests/${el.dataset.id}/cancel`,{method:'POST'});toast('Request cancelled.');acts.reload()}catch(e){toast(errText(e),true)}};
+acts.confirmDon=async el=>{if(!await confirmBox('Confirm this donation?','Only confirm after the donor has actually donated. Their waiting period will start and the request will close.','Confirm donation'))return;
+  try{await api(`/api/requests/${el.dataset.id}/responses/${el.dataset.rid}/confirm`,{method:'POST'});toast('Donation confirmed. Thank you.');acts.reload()}catch(e){toast(errText(e),true)}};
+
+/* ---- chat ---- */
+let ws=null,wsOn=false;const wsListeners=new Set();
+function connectWs(){
+  if(ws||!window.StompJs||!S.token)return;
+  ws=new StompJs.Client({brokerURL:API_BASE.replace(/^http/,'ws')+'/ws',connectHeaders:{Authorization:'Bearer '+S.token},reconnectDelay:5000,heartbeatIncoming:10000,heartbeatOutgoing:10000});
+  ws.onConnect=()=>{wsOn=true;ws.subscribe('/user/queue/messages',m=>{try{const d=JSON.parse(m.body);wsListeners.forEach(f=>f(d))}catch(e){}});ws.subscribe('/user/queue/errors',m=>{toast('Message not sent.',true)})};
+  ws.onWebSocketClose=()=>{wsOn=false};ws.onStompError=()=>{wsOn=false};ws.activate();
+}
+function disconnectWs(){try{ws&&ws.deactivate()}catch(e){}ws=null;wsOn=false}
+DASH['USER:chat']=DASH['INSTITUTION:chat']=async(c,id)=>{
+  connectWs();
+  const convs=await api('/api/chat/conversations');const me=S.role==='USER'?'USER':'INSTITUTION';
+  mount(c,html`<h2>Messages</h2><div class="chat"><div class="convs">${convs.length?convs.map(x=>html`<a class="conv ${x.id===id?'on':''}" href="#/dashboard/chat/${x.id}" style="text-decoration:none;color:inherit"><b>${x.institutionName||'Conversation'}</b><div class="small muted">${x.lastMessageAt?ago(x.lastMessageAt):'No messages yet'}</div></a>`)
+      :html`<div class="card empty">No conversations yet.${S.role==='USER'?html`<br>Find an institution on the map and tap <b>Message</b>.`:''}</div>`}</div>
+    <div class="thread" id="thread">${id?html`<div class="msgs" id="msgs">${spinner(2)}</div><form class="composer" data-form="send"><input type="text" name="body" placeholder="Write a message" maxlength="1000" autocomplete="off" required><button class="btn primary">Send</button></form>`:html`<div class="empty" style="margin:auto">Choose a conversation.</div>`}</div></div>`);
+  if(!id)return;
+  const seen=new Set();const box=$('#msgs');
+  const add=m=>{if(seen.has(m.id)||m.conversationId&&m.conversationId!==id)return;seen.add(m.id);const mine=m.sender===me;
+    box.insertAdjacentHTML('beforeend',`<div class="msg ${mine?'me':''}">${esc(m.body)}<small>${esc(when(m.sentAt))}${mine?'':` <button class="rp" data-act="reportMsg" data-id="${m.id}">Report</button>`}</small></div>`);box.scrollTop=box.scrollHeight};
+  const load=async()=>{try{const ms=await api(`/api/chat/conversations/${id}/messages`);if(!seen.size)box.innerHTML='';ms.forEach(add);if(!ms.length&&!seen.size)box.innerHTML='<div class="empty" style="margin:auto">Say hello to start the conversation.</div>'}catch(e){box.innerHTML=`<div class="empty">${esc(errText(e))}</div>`}};
+  await load();const fn=m=>{box.querySelector('.empty')&&(box.innerHTML='');add(m)};wsListeners.add(fn);
+  const poll=setInterval(()=>{if(!wsOn)load()},5000);onLeave(()=>{wsListeners.delete(fn);clearInterval(poll)});
+  forms.send=async f=>{const body=f.elements.body.value.trim();if(!body)return;f.elements.body.value='';
+    if(wsOn){try{ws.publish({destination:'/app/chat.send',body:JSON.stringify({conversationId:id,body})});return}catch(e){}}
+    try{const m=await api(`/api/chat/conversations/${id}/messages`,{body:{body}});box.querySelector('.empty')&&(box.innerHTML='');add(m)}catch(e){toast(errText(e),true);f.elements.body.value=body}};
+};
+acts.reportMsg=async el=>{
+  modal(html`<h3>Report this message</h3><form data-form="rep"><label class="f">Reason</label><select class="in" name="reason">${['SPAM','ABUSE','HARASSMENT','MISINFORMATION','OTHER'].map(x=>html`<option value="${x}">${nice(x)}</option>`)}</select><label class="f" style="margin-top:12px">Anything else we should know? (optional)</label><textarea name="note" rows="3" maxlength="300"></textarea><div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" class="btn ghost" data-act="closeM">Cancel</button><button class="btn primary">Send report</button></div></form>`);
+  forms.rep=async f=>{try{await api(`/api/chat/messages/${el.dataset.id}/report`,{body:{reason:f.elements.reason.value,note:f.elements.note.value.trim()||null}});closeModal();toast('Thanks. An administrator will review it.')}catch(e){toast(errText(e),true)}}};
+acts.closeM=closeModal;
+
+/* ---- account deletion ---- */
+DASH['USER:account']=DASH['INSTITUTION:account']=async c=>{
+  mount(c,html`<h2>Account</h2><div class="card"><h3>Delete my account</h3><p class="muted">This removes your personal data from Raktaveda. It cannot be undone. You will confirm twice.</p><div id="delbox">
+   <form data-form="delStart" class="grid" style="max-width:380px">${S.role==='INSTITUTION'?html`<div class="field"><input type="password" name="password" id="dpw" placeholder=" " required><label for="dpw">Your password</label></div>`:''}<div><button class="btn danger">Start deletion</button></div></form></div></div>`)};
+let delCid=null;
+forms.delStart=f=>busy($('button',f),async()=>{try{const r=await api('/api/account/delete/start',{body:f.elements.password?{password:f.elements.password.value}:{}});delCid=r.challengeId;
+  mount($('#delbox'),html`<div class="note">We sent you a code. ${r.devCode?html`Code for this session: <b>${r.devCode}</b>`:''}</div><form data-form="delConfirm" class="grid" style="max-width:380px"><div class="field"><input name="code" id="dc1" placeholder=" " required inputmode="numeric" maxlength="10"><label for="dc1">Code</label></div><div class="field"><input name="confirmText" id="dc2" placeholder=" " required><label for="dc2">Type DELETE to confirm</label></div><div><button class="btn primary">Delete my account for good</button></div></form>`)}catch(e){toast(errText(e),true)}});
+forms.delConfirm=f=>busy($('button',f),async()=>{try{await api('/api/account/delete/confirm',{body:{challengeId:delCid,code:f.elements.code.value.trim(),confirmText:f.elements.confirmText.value.trim()}});disconnectWs();setSession(null);toast('Your account has been deleted.');go('#/')}catch(e){toast(errText(e),true)}});
+
+/* ---- admin ---- */
+let admFilter='';
+DASH['ADMIN:institutions']=async c=>{
+  const rows=await api('/api/admin/institutions'+(admFilter?'?status='+admFilter:''));
+  mount(c,html`<div class="row between"><h2 style="margin:0">Institutions</h2><div class="seg">${['','PENDING','VERIFIED','REJECTED','SUSPENDED'].map(s=>html`<button class="${s===admFilter?'on':''}" data-act="admF" data-v="${s}">${s?nice(s):'All'}</button>`)}</div></div>
+  <div class="card tbl" style="margin-top:16px">${rows.length?html`<table><thead><tr><th>Name</th><th>Type</th><th>Licence</th><th>Contact</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows.map(r=>html`<tr><td><b>${r.name}</b><div class="small muted">${r.address||''}</div></td><td>${nice(r.type)}</td><td>${r.licenceNumber}</td><td class="small">${r.email}<br>${r.publicPhone}</td>
+   <td><span class="pill ${r.status==='VERIFIED'?'ok':r.status==='PENDING'?'warn':'mute'}">${nice(r.status)}</span>${r.statusReason?html`<div class="small muted">${r.statusReason}</div>`:''}</td>
+   <td><div class="row" style="gap:6px">${r.status!=='VERIFIED'?html`<button class="btn teal sm" data-act="admDo" data-id="${r.id}" data-do="verify">Verify</button>`:''}${r.status==='PENDING'?html`<button class="btn danger sm" data-act="admDo" data-id="${r.id}" data-do="reject">Reject</button>`:''}${r.status==='VERIFIED'?html`<button class="btn danger sm" data-act="admDo" data-id="${r.id}" data-do="suspend">Suspend</button>`:''}</div></td></tr>`)}</tbody></table>`:html`<div class="empty">No institutions here.</div>`}</div>`)};
+acts.admF=el=>{admFilter=el.dataset.v;render()};
+acts.admDo=async el=>{const d=el.dataset.do;let reason=null;if(d!=='verify'){reason=await askText(nice(d)+' this institution','Reason (shown to the institution)',nice(d));if(reason===null)return}
+  try{await api(`/api/admin/institutions/${el.dataset.id}/${d}`,{body:{reason:reason||null}});toast('Done.');render()}catch(e){toast(errText(e),true)}};
+let repFilter='OPEN';
+DASH['ADMIN:reports']=async c=>{
+  const rows=await api('/api/admin/reports?status='+repFilter);
+  mount(c,html`<div class="row between"><h2 style="margin:0">Reported messages</h2><div class="seg">${['OPEN','ACTIONED','DISMISSED'].map(s=>html`<button class="${s===repFilter?'on':''}" data-act="repF" data-v="${s}">${nice(s)}</button>`)}</div></div>
+  <div class="grid" style="margin-top:16px">${rows.length?rows.map(r=>html`<div class="card row between"><div><b>${nice(r.reason)}</b> <span class="pill mute">${nice(r.reporterType)} reported</span><div class="small muted">${when(r.createdAt)}${r.note?' · '+r.note:''}</div></div><button class="btn ghost sm" data-act="repOpen" data-id="${r.id}">Review</button></div>`):html`<div class="card empty">Nothing to review.</div>`}</div>`)};
+acts.repF=el=>{repFilter=el.dataset.v;render()};
+acts.repOpen=async el=>{try{const r=await api('/api/admin/reports/'+el.dataset.id);
+  modal(html`<h3>${nice(r.reason)}</h3>${r.message?html`<div class="card flat"><div class="small muted">${nice(r.message.senderType)} wrote · ${when(r.message.sentAt)}</div><p style="margin:6px 0 0">${r.message.body}</p></div>`:''}${r.note?html`<p class="small">Reporter’s note: ${r.note}</p>`:''}
+  ${r.status==='OPEN'?html`<form data-form="resolve"><label class="f" style="margin-top:12px">Decision</label><select class="in" name="status"><option value="ACTIONED">Action taken</option><option value="DISMISSED">Dismiss</option></select><label class="f" style="margin-top:12px">Note</label><textarea name="note" rows="2" maxlength="300"></textarea><div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" class="btn ghost" data-act="closeM">Close</button><button class="btn primary">Save decision</button></div></form>`:html`<div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="closeM">Close</button></div>`}`);
+  forms.resolve=async f=>{try{await api(`/api/admin/reports/${el.dataset.id}/resolve`,{body:{status:f.elements.status.value,note:f.elements.note.value.trim()||null}});closeModal();toast('Saved.');render()}catch(e){toast(errText(e),true)}}}catch(e){toast(errText(e),true)}};
+DASH['ADMIN:audit']=async c=>{const rows=await api('/api/admin/audit');
+  mount(c,html`<h2>Audit log</h2><div class="card tbl">${rows.length?html`<table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead><tbody>${rows.map(r=>html`<tr><td>${when(r.at)}</td><td>${nice(r.actorType)}</td><td><b>${nice(r.action)}</b></td><td>${nice(r.targetType)}</td><td class="small">${r.detail||''}</td></tr>`)}</tbody></table>`:html`<div class="empty">No entries yet.</div>`}</div>`)};
+DASH['ADMIN:import']=async c=>{
+  mount(c,html`<h2>Import official institutions</h2><div class="card"><p class="muted">Upload a CSV of verified hospitals and blood banks. Start with a check run: nothing is saved until you turn it off.</p>
+  <form data-form="imp" class="grid" style="max-width:480px"><input type="file" name="file" accept=".csv,text/csv" required><label class="row"><input type="checkbox" name="dry" checked> Check only (do not save)</label><div><button class="btn primary">Run</button></div></form><div id="impOut"></div></div>`)};
+forms.imp=f=>busy($('button',f),async()=>{const fd=new FormData();fd.append('file',f.elements.file.files[0]);const dry=f.elements.dry.checked;
+  try{const r=await api('/api/admin/import/institutions?dryRun='+dry,{form:fd,method:'POST',okStatuses:[422]});mount($('#impOut'),html`<h3 style="margin-top:20px">${dry?'Check result':'Import result'}</h3><pre style="white-space:pre-wrap;background:var(--surface2);padding:14px;border-radius:12px;overflow:auto;max-height:340px">${JSON.stringify(r,null,2)}</pre>`)}catch(e){toast(errText(e),true)}});
+/* ============ RAKTA ASSISTANT ============ */
+var astOpen=false;const astMsgs=[];
+function renderAssistantFab(){
+  let root=$('#ast-root');if(!root){root=document.createElement('div');root.id='ast-root';document.body.append(root)}
+  mount(root,html`<button class="fab" data-act="astToggle" aria-label="Ask Rakta">${raw(ico.chat)}Ask Rakta</button>${astOpen?html`<div class="ast" role="dialog" aria-label="Rakta assistant"><header><span>Rakta assistant</span><button class="icon-btn" style="width:30px;height:30px;background:transparent;color:inherit;border-color:rgba(255,255,255,.4)" data-act="astToggle" aria-label="Close">✕</button></header>
+   <div class="msgs" id="amsgs">${astMsgs.length?astMsgs.map(m=>html`<div class="msg ${m.me?'me':''}">${m.text}</div>`):html`<div class="msg">Hi, I’m Rakta. Ask me about donating blood, who can donate, or how to use Raktaveda.</div>`}</div>
+   ${S.token?html`<form class="composer" data-form="ask"><input name="q" maxlength="300" placeholder="Type your question" autocomplete="off" required><button class="btn primary sm">Ask</button></form>`:html`<div class="composer"><a class="btn primary" style="flex:1" href="#/login">Log in to ask a question</a></div>`}</div>`:''}`);
+  const m=$('#amsgs');if(m)m.scrollTop=m.scrollHeight;
+}
+acts.astToggle=()=>{astOpen=!astOpen;renderAssistantFab();const i=$('.ast input');if(i)i.focus()};
+forms.ask=async f=>{const q=f.elements.q.value.trim();if(!q)return;astMsgs.push({me:true,text:q});astMsgs.push({text:'…',tmp:true});renderAssistantFab();
+  let text;try{const r=await api('/api/v1/assistant/ask',{body:{question:q}});text=r.answer+(r.remainingToday!=null&&r.remainingToday<=3?`\n\n(${r.remainingToday} questions left today)`:'')}catch(e){text=errText(e)}
+  astMsgs.pop();astMsgs.push({text});renderAssistantFab();const i=$('.ast input');if(i)i.focus()};
+
+/* ============ BOOT ============ */
+document.documentElement.lang=S.lang;
+PAGES.home&&render();
+if(S.token&&S.role){api('/api/auth/me').then(me=>setSession(S.token,me.role||S.role,me.institutionStatus||null)).catch(()=>{})}
+</script>
+</body>
+</html>
